@@ -11,7 +11,7 @@ const setupDomBoard = function (board) {
             const newCellElement = document.createElement('div');
             newCellElement.classList.add('cell');
             newCellElement.id = cellId(r, c)
-            addPieceToCell(board.getCell(r,c), newCellElement);
+            addPieceToCell(board.getCell(createPos(r,c)), newCellElement);
             newCellElement.addEventListener("click", (event) => selectCell(event, r, c));
             newRowElement.appendChild(newCellElement);
         }
@@ -20,8 +20,8 @@ const setupDomBoard = function (board) {
     }
 }
 
-const findCellElement = function (r, c) {
-    return document.querySelector(`#${cellId(r,c)}`)
+const findCellElement = function (pos) {
+    return document.querySelector(`#${cellId(pos.r,pos.c)}`)
 }
 
 const addPieceToCell = function(cellPiece, cellElement) {
@@ -34,7 +34,7 @@ const addPieceToCell = function(cellPiece, cellElement) {
     }
 }
 
-const selectCell = function(event, r, c) {
+const selectCell = function(event, pos) {
     let cellElement;
 
     if (event.target.classList.contains('cell')) {

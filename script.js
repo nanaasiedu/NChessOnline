@@ -1,11 +1,3 @@
-const initialDangerScan = function(board) {
-    for (let r = 0; r < 8; r++) {
-        for(let c = 0; c < 8; c++) {
-            dangerScan(board, r, c)
-        }
-    }
-}
-
 window.onload = function () {
     const board = new Board();
     setupDomBoard(board);
@@ -13,8 +5,9 @@ window.onload = function () {
 
     for (let r = 0; r < 8; r++) {
         for(let c = 0; c < 8; c++) {
-            if (board.getCell(r, c).whiteCheckingPieces.length !== 0 || board.getCell(r, c).blackCheckingPieces.length !== 0) {
-                findCellElement(r,c).classList.add('selected')
+            const pos = createPos(r,c);
+            if (board.getCell(pos).whiteCheckingPieces.length !== 0 || board.getCell(pos).blackCheckingPieces.length !== 0) {
+                findCellElement(pos).classList.add('selected')
             }
         }
     }
