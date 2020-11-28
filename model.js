@@ -27,57 +27,68 @@ class Cell {
     piece
     whiteCheckingPieces
     blackCheckingPieces
-    position
 
-    constructor(colour, piece, position) {
-        this.colour = colour;
-        this.piece = piece;
-        this.position = position;
+    constructor(cellColour, cellPiece) {
+        this.colour = cellColour;
+        this.piece = cellPiece;
         this.whiteCheckingPieces = [];
         this.blackCheckingPieces = [];
     }
+
+    clearCell() {
+        this.piece = piece.none;
+        this.colour = undefined;
+    }
+
+    placePiece(colour, piece) {
+        this.colour = colour;
+        this.piece = piece;
+    }
 }
+
+const BOARD_WIDTH = 8;
+const BOARD_HEIGHT = 8;
 
 class Board {
     rows;
 
     constructor() {
-        this.rows = Array(8);
+        this.rows = Array(BOARD_HEIGHT);
 
         const fillRow = function (row, r, colour, piece) {
             for (let c = 0; c < row.length; c++) {
-                row[c] = new Cell(colour, piece, createPos(r,c))
+                row[c] = new Cell(colour, piece)
             }
         }
 
         for (let r = 0; r < this.rows.length; r++) {
-            this.rows[r] = Array(8);
+            this.rows[r] = Array(BOARD_WIDTH);
 
-            if (r > 1 && r < 6) {
+            if (r > 1 && r < BOARD_HEIGHT - 2) {
                 fillRow(this.rows[r], r, undefined, piece.none);
             }
         }
 
         fillRow(this.rows[1], 1, colour.black, piece.pawn);
-        fillRow(this.rows[6], 6, colour.white, piece.pawn);
+        fillRow(this.rows[BOARD_HEIGHT - 2], BOARD_HEIGHT - 2, colour.white, piece.pawn);
 
-        this.rows[0][0] = new Cell(colour.black, piece.rook, createPos(0, 0));
-        this.rows[0][7] = new Cell(colour.black, piece.rook, createPos(0, 7));
-        this.rows[0][1] = new Cell(colour.black, piece.knight, createPos(0, 1));
-        this.rows[0][6] = new Cell(colour.black, piece.knight, createPos(0, 6));
-        this.rows[0][2] = new Cell(colour.black, piece.bishop, createPos(0, 2));
-        this.rows[0][5] = new Cell(colour.black, piece.bishop, createPos(0, 5));
-        this.rows[0][3] = new Cell(colour.black, piece.queen, createPos(0, 3));
-        this.rows[0][4] = new Cell(colour.black, piece.king, createPos(0, 4));
+        this.rows[0][0] = new Cell(colour.black, piece.rook);
+        this.rows[0][7] = new Cell(colour.black, piece.rook);
+        this.rows[0][1] = new Cell(colour.black, piece.knight);
+        this.rows[0][6] = new Cell(colour.black, piece.knight);
+        this.rows[0][2] = new Cell(colour.black, piece.bishop);
+        this.rows[0][5] = new Cell(colour.black, piece.bishop);
+        this.rows[0][3] = new Cell(colour.black, piece.queen);
+        this.rows[0][4] = new Cell(colour.black, piece.king);
 
-        this.rows[7][0] = new Cell(colour.white, piece.rook, createPos(7, 0));
-        this.rows[7][7] = new Cell(colour.white, piece.rook, createPos(7, 7));
-        this.rows[7][1] = new Cell(colour.white, piece.knight, createPos(7, 1));
-        this.rows[7][6] = new Cell(colour.white, piece.knight, createPos(7, 6));
-        this.rows[7][2] = new Cell(colour.white, piece.bishop, createPos(7, 2));
-        this.rows[7][5] = new Cell(colour.white, piece.bishop, createPos(7, 5));
-        this.rows[7][3] = new Cell(colour.white, piece.queen, createPos(7, 3));
-        this.rows[7][4] = new Cell(colour.white, piece.king, createPos(7, 4));
+        this.rows[BOARD_HEIGHT - 1][0] = new Cell(colour.white, piece.rook);
+        this.rows[BOARD_HEIGHT - 1][7] = new Cell(colour.white, piece.rook);
+        this.rows[BOARD_HEIGHT - 1][1] = new Cell(colour.white, piece.knight);
+        this.rows[BOARD_HEIGHT - 1][6] = new Cell(colour.white, piece.knight);
+        this.rows[BOARD_HEIGHT - 1][2] = new Cell(colour.white, piece.bishop);
+        this.rows[BOARD_HEIGHT - 1][5] = new Cell(colour.white, piece.bishop);
+        this.rows[BOARD_HEIGHT - 1][3] = new Cell(colour.white, piece.queen);
+        this.rows[BOARD_HEIGHT - 1][4] = new Cell(colour.white, piece.king);
     }
 
     getCell(pos) {
@@ -105,6 +116,14 @@ class Board {
         const enemyPiecesProp = friendlyColour === colour.white ? "blackCheckingPieces" : "whiteCheckingPieces";
         return this.rows[pos.r][pos.c][enemyPiecesProp].length !== 0
     }
+
+    getWidth() {
+        return BOARD_WIDTH;
+    }
+
+    getHeight() {
+        return BOARD_HEIGHT;
+    }
 }
 
 Board.prototype.toString = function() {
@@ -112,5 +131,5 @@ Board.prototype.toString = function() {
 };
 
 function legalPosition(r, c) {
-    return r >= 0 && r < 8 && c >= 0 && c < 8
+    return r >= 0 && r < BOARD_HEIGHT && c >= 0 && c < BOARD_WIDTH
 }

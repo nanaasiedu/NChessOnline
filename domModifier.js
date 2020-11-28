@@ -3,11 +3,11 @@ const cellId = (r, c) => `cell-${r}-${c}`
 const setupDomBoard = function (board) {
     const boardElement = document.getElementById('board');
 
-    for (let r = 0; r < 8; r++) {
+    for (let r = 0; r < board.getHeight(); r++) {
         const newRowElement = document.createElement('div');
         newRowElement.setAttribute('class', 'row');
 
-        for (let c = 0; c < 8; c++) {
+        for (let c = 0; c < board.getWidth(); c++) {
             const newCellElement = document.createElement('div');
             newCellElement.classList.add('cell');
             newCellElement.id = cellId(r, c)
@@ -44,4 +44,15 @@ const selectCell = function(event, pos) {
     }
 
     cellElement.classList.add('selected');
+}
+
+const showDangerCells = function (board) {
+    for (let r = 0; r < board.getHeight(); r++) {
+        for(let c = 0; c < board.getWidth(); c++) {
+            const pos = createPos(r,c);
+            if (board.isCellChecked(pos, colour.white) || board.isCellChecked(pos, colour.black)) {
+                findCellElement(pos).classList.add('selected')
+            }
+        }
+    }
 }

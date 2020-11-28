@@ -10,8 +10,8 @@ function createVec(x, y) {
 }
 
 const initialDangerScan = function (board) {
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
+    for (let r = 0; r < board.getHeight(); r++) {
+        for (let c = 0; c < board.getWidth(); c++) {
             dangerScan(board, createPos(r, c))
         }
     }
@@ -25,23 +25,25 @@ function dangerScan(board, startPos) {
 }
 
 const dangerScanMethodMap = {
-    none: () => {
+    none: () => {},
+    pawn:  pawnDangerScan,
+    knight: knightDangerScan,
+    bishop: (board, pieceColour, startPos) => (crossDangerScan(board, piece.bishop, pieceColour, startPos)),
+    rook: (board, pieceColour, startPos) => (plusDangerScan(board, piece.rook, pieceColour, startPos)),
+    queen: (board, pieceColour, startPos) => {
+        plusDangerScan(board, piece.queen, pieceColour, startPos)
+        crossDangerScan(board, piece.queen, pieceColour, startPos)
     },
-    pawn: pawnDangerScan,
-    knight: () => {
-    },
-    bishop: () => {
-    },
-    rook: rookDangerScan,
-    queen: () => {
-    },
-    king: () => {
-    }
+    king: kingDangerScan
 }
 
 function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec) {
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: startPos.r, c: startPos.c};
+
+    const legalPosition = function(r, c) {
+        return r >= 0 && r < board.getHeight() && c >= 0 && c < board.getWidth()
+    }
 
     let i = 1;
     while (legalPosition(r + i * vy, c + i * vx)) {
@@ -69,8 +71,37 @@ function pawnDangerScan(board, pieceColour, startPos) {
     }
 }
 
-function rookDangerScan(board, pieceColour, startPos) {
-    plusDangerScan(board, piece.rook, pieceColour, startPos);
+function knightDangerScan(board, pieceColour, startPos) {
+    const r = startPos.r;
+    const c = startPos.c;
+
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 2, c - 1))
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 2, c + 1))
+
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 2, c - 1))
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 2, c + 1))
+
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 1, c + 2))
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 1, c + 2))
+
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 1, c - 2))
+    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 1, c - 2))
+}
+
+function kingDangerScan(board, pieceColour, startPos) {
+    const r = startPos.r;
+    const c = startPos.c;
+
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c - 1))
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c ))
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c + 1 ))
+
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c - 1))
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c ))
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c + 1 ))
+
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r, c - 1))
+    board.addCheckingPiece(pieceColour, piece.king, createPos(r, c + 1))
 }
 
 function plusDangerScan(board, cellPiece, pieceColour, startPos) {
@@ -80,10 +111,9 @@ function plusDangerScan(board, cellPiece, pieceColour, startPos) {
     scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 0))
 }
 
-function bishopDangerScan(board, pieceColour, r, c) {
-
-}
-
-function legalPosition(r, c) {
-    return r >= 0 && r < 8 && c >= 0 && c < 8
+function crossDangerScan(board, cellPiece, pieceColour, startPos) {
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 1))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, -1))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 1))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, -1))
 }
