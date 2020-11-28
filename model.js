@@ -81,10 +81,36 @@ class Board {
     }
 
     getCell(pos) {
-        return this.rows[pos.r][pos.c];
+        const cell = this.rows[pos.r][pos.c];
+        return  {
+            piece: cell.piece,
+            colour: cell.colour
+        };
+    }
+
+    pieceAtCell(pos) {
+        return this.getCell(pos).piece;
+    }
+
+    addCheckingPiece(pieceColour, piece, posToCheck, directionVec) {
+        if (!legalPosition(posToCheck.r, posToCheck.c)) {
+            return;
+        }
+        const checkingPiecesProp = pieceColour === colour.white ? "whiteCheckingPieces" : "blackCheckingPieces";
+
+        this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp].push({ piece, direction: directionVec });
+    }
+
+    isCellChecked(pos, friendlyColour) {
+        const enemyPiecesProp = friendlyColour === colour.white ? "blackCheckingPieces" : "whiteCheckingPieces";
+        return this.rows[pos.r][pos.c][enemyPiecesProp].length !== 0
     }
 }
 
 Board.prototype.toString = function() {
     return `${this.rows}`;
 };
+
+function legalPosition(r, c) {
+    return r >= 0 && r < 8 && c >= 0 && c < 8
+}

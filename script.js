@@ -6,7 +6,7 @@ window.onload = function () {
     for (let r = 0; r < 8; r++) {
         for(let c = 0; c < 8; c++) {
             const pos = createPos(r,c);
-            if (board.getCell(pos).whiteCheckingPieces.length !== 0 || board.getCell(pos).blackCheckingPieces.length !== 0) {
+            if (board.isCellChecked(pos, colour.white) || board.isCellChecked(pos, colour.black)) {
                 findCellElement(pos).classList.add('selected')
             }
         }

@@ -5,7 +5,9 @@ class Vector {
     }
 }
 
-function createVec(x , y) { return new Vector(x, y); }
+function createVec(x, y) {
+    return new Vector(x, y);
+}
 
 const initialDangerScan = function (board) {
     for (let r = 0; r < 8; r++) {
@@ -37,49 +39,45 @@ const dangerScanMethodMap = {
     }
 }
 
-function scanInDirection(board, pieceColour, startPos, directionVec) {
-    const checkingPiecesProp = pieceColour === colour.white ? "whiteCheckingPieces" : "blackCheckingPieces"
-    const {vx, vy} = { vx: directionVec.x, vy: directionVec.y };
-    const {r, c} = startPos;
+function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec) {
+    const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
+    const {r, c} = { r: startPos.r, c: startPos.c};
 
     let i = 1;
     while (legalPosition(r + i * vy, c + i * vx)) {
         const curPos = createPos(r + i * vy, c + i * vx);
-        const currentCell = board.getCell(curPos);
-        if (currentCell.piece !== piece.none) {
-            currentCell[checkingPiecesProp].push({piece: piece.rook, direction: directionVec})
+        board.addCheckingPiece(pieceColour, cellPiece, curPos, directionVec);
+
+        if (board.pieceAtCell(curPos) !== piece.none) {
             return;
         }
-
-        currentCell[checkingPiecesProp].push({piece: piece.rook})
 
         i++;
     }
 }
 
-function pawnDangerScan(board, pieceColour, pos) {
-    const r = pos.r;
-    const c = pos.c;
+function pawnDangerScan(board, pieceColour, startPos) {
+    const r = startPos.r;
+    const c = startPos.c;
 
     if (pieceColour === colour.white) {
-        if (legalPosition(r - 1, c - 1)) {
-            board.getCell(createPos(r - 1, c - 1)).whiteCheckingPieces.push({piece: piece.pawn})
-        }
-        if (legalPosition(r - 1, c + 1)) {
-            board.getCell(createPos(r - 1, c + 1)).whiteCheckingPieces.push({piece: piece.pawn})
-        }
+        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r - 1, c - 1))
+        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r - 1, c + 1))
     } else {
-        if (legalPosition(r + 1, c - 1)) {
-            board.getCell(createPos(r + 1, c - 1)).blackCheckingPieces.push({piece: piece.pawn})
-        }
-        if (legalPosition(r + 1, c + 1)) {
-            board.getCell(createPos(r + 1, c + 1)).blackCheckingPieces.push({piece: piece.pawn})
-        }
+        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r + 1, c - 1))
+        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r + 1, c + 1))
     }
 }
 
 function rookDangerScan(board, pieceColour, startPos) {
-    scanInDirection(board, pieceColour, startPos, createVec(0, 1))
+    plusDangerScan(board, piece.rook, pieceColour, startPos);
+}
+
+function plusDangerScan(board, cellPiece, pieceColour, startPos) {
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, 1))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 0))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, -1))
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 0))
 }
 
 function bishopDangerScan(board, pieceColour, r, c) {
