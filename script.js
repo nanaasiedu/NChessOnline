@@ -1,5 +1,8 @@
 window.onload = function () {
     const board = new Board();
-    setupDomBoard(board);
+    const gameManager = new GameManager(board);
+
+    setupDomBoard(board, gameManager);
     initialDangerScan(board);
+    drawBoard(board);
 }

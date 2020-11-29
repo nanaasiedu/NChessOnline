@@ -9,7 +9,7 @@ function createVec(x, y) {
     return new Vector(x, y);
 }
 
-const initialDangerScan = function (board) {
+function initialDangerScan(board) {
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
             dangerScan(board, createPos(r, c))
@@ -116,4 +116,12 @@ function crossDangerScan(board, cellPiece, pieceColour, startPos) {
     scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, -1))
     scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 1))
     scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, -1))
+}
+
+function markPossibleMoves(board, pos) {
+    if (board.getCell(pos).piece === piece.none) {
+        return false;
+    }
+
+
 }

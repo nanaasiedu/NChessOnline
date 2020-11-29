@@ -1,6 +1,6 @@
 const cellId = (r, c) => `cell-${r}-${c}`
 
-const setupDomBoard = function (board) {
+function setupDomBoard(board, gameManager) {
     const boardElement = document.getElementById('board');
 
     for (let r = 0; r < board.getHeight(); r++) {
@@ -10,9 +10,8 @@ const setupDomBoard = function (board) {
         for (let c = 0; c < board.getWidth(); c++) {
             const newCellElement = document.createElement('div');
             newCellElement.classList.add('cell');
-            newCellElement.id = cellId(r, c)
-            addPieceToCell(board.getCell(createPos(r,c)), newCellElement);
-            newCellElement.addEventListener("click", (event) => selectCell(event, r, c));
+            newCellElement.id = cellId(r, c);
+            newCellElement.addEventListener("click", (event) => selectCell(event, gameManager, r, c));
             newRowElement.appendChild(newCellElement);
         }
 
@@ -20,11 +19,22 @@ const setupDomBoard = function (board) {
     }
 }
 
-const findCellElement = function (pos) {
+function drawBoard(board) {
+    for (let r = 0; r < board.getHeight(); r++) {
+        for (let c = 0; c < board.getWidth(); c++) {
+            addPieceToCell(createPos(r,c), board);
+        }
+    }
+}
+
+function findCellElement(pos) {
     return document.querySelector(`#${cellId(pos.r,pos.c)}`)
 }
 
-const addPieceToCell = function(cellPiece, cellElement) {
+function addPieceToCell(pos, board) {
+    const cellPiece = board.getCell(pos);
+    const cellElement = findCellElement(pos);
+
     if (cellPiece.piece !== piece.none) {
         const pieceImage = document.createElement('img');
         pieceImage.src = `images/pieces/${cellPiece.colour}_${cellPiece.piece}.png`;
@@ -34,19 +44,17 @@ const addPieceToCell = function(cellPiece, cellElement) {
     }
 }
 
-const selectCell = function(event, pos) {
-    let cellElement;
+function selectCell(event, gameManager, r, c) {
+    gameManager.selectCell(createPos(r,c))
+}
 
-    if (event.target.classList.contains('cell')) {
-        cellElement = event.target;
-    } else {
-        cellElement = event.target.parentElement;
-    }
+function highlightCell (pos) {
+    const cellElement = findCellElement(pos);
 
     cellElement.classList.add('selected');
 }
 
-const showDangerCells = function (board) {
+function showDangerCells(board) {
     for (let r = 0; r < board.getHeight(); r++) {
         for(let c = 0; c < board.getWidth(); c++) {
             const pos = createPos(r,c);
