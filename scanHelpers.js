@@ -9,6 +9,8 @@ function createVec(x, y) {
     return new Vector(x, y);
 }
 
+// danger scan methods
+
 function initialDangerScan(board) {
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
@@ -20,24 +22,26 @@ function initialDangerScan(board) {
 function dangerScan(board, startPos) {
     const threateningCell = board.getCell(startPos)
 
-    const scanMethod = dangerScanMethodMap[threateningCell.piece];
-    scanMethod(board, threateningCell.colour, startPos)
+    const cellScanMethod = cellScanMethodMap[threateningCell.piece];
+    cellScanMethod(board, threateningCell.colour, startPos, addCheckingPieceToPos)
 }
 
-const dangerScanMethodMap = {
+const cellScanMethodMap = {
     none: () => {},
-    pawn:  pawnDangerScan,
-    knight: knightDangerScan,
-    bishop: (board, pieceColour, startPos) => (crossDangerScan(board, piece.bishop, pieceColour, startPos)),
-    rook: (board, pieceColour, startPos) => (plusDangerScan(board, piece.rook, pieceColour, startPos)),
-    queen: (board, pieceColour, startPos) => {
-        plusDangerScan(board, piece.queen, pieceColour, startPos)
-        crossDangerScan(board, piece.queen, pieceColour, startPos)
+    pawn:  pawnScan,
+    knight: knightScan,
+    bishop: (board, pieceColour, startPos, scanMethod) => (crossScan(board, piece.bishop, pieceColour, startPos, scanMethod)),
+    rook: (board, pieceColour, startPos, scanMethod) => (plusScan(board, piece.rook, pieceColour, startPos, scanMethod)),
+    queen: (board, pieceColour, startPos, scanMethod) => {
+        plusScan(board, piece.queen, pieceColour, startPos, scanMethod)
+        crossScan(board, piece.queen, pieceColour, startPos, scanMethod)
     },
-    king: kingDangerScan
+    king: kingScan
 }
 
-function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec) {
+// scan methods
+
+function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, scanMethod) {
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: startPos.r, c: startPos.c};
 
@@ -48,7 +52,7 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec) 
     let i = 1;
     while (legalPosition(r + i * vy, c + i * vx)) {
         const curPos = createPos(r + i * vy, c + i * vx);
-        board.addCheckingPiece(pieceColour, cellPiece, curPos, directionVec);
+        scanMethod(board, pieceColour, cellPiece, curPos, directionVec);
 
         if (board.pieceAtCell(curPos) !== piece.none) {
             return;
@@ -58,65 +62,67 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec) 
     }
 }
 
-function pawnDangerScan(board, pieceColour, startPos) {
+function pawnScan(board, pieceColour, startPos, scanMethod) {
     const r = startPos.r;
     const c = startPos.c;
 
     if (pieceColour === colour.white) {
-        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r - 1, c - 1))
-        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r - 1, c + 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c - 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c + 1))
     } else {
-        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r + 1, c - 1))
-        board.addCheckingPiece(pieceColour, piece.pawn, createPos(r + 1, c + 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c - 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c + 1))
     }
 }
 
-function knightDangerScan(board, pieceColour, startPos) {
+function knightScan(board, pieceColour, startPos, scanMethod) {
     const r = startPos.r;
     const c = startPos.c;
 
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 2, c - 1))
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 2, c + 1))
+    scanMethod(board, pieceColour, piece.knight, createPos(r + 2, c - 1))
+    scanMethod(board, pieceColour, piece.knight, createPos(r + 2, c + 1))
 
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 2, c - 1))
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 2, c + 1))
+    scanMethod(board, pieceColour, piece.knight, createPos(r - 2, c - 1))
+    scanMethod(board, pieceColour, piece.knight, createPos(r - 2, c + 1))
 
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 1, c + 2))
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 1, c + 2))
+    scanMethod(board, pieceColour, piece.knight, createPos(r + 1, c + 2))
+    scanMethod(board, pieceColour, piece.knight, createPos(r - 1, c + 2))
 
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r + 1, c - 2))
-    board.addCheckingPiece(pieceColour, piece.knight, createPos(r - 1, c - 2))
+    scanMethod(board, pieceColour, piece.knight, createPos(r + 1, c - 2))
+    scanMethod(board, pieceColour, piece.knight, createPos(r - 1, c - 2))
 }
 
-function kingDangerScan(board, pieceColour, startPos) {
+function kingScan(board, pieceColour, startPos, scanMethod) {
     const r = startPos.r;
     const c = startPos.c;
 
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c - 1))
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c ))
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r + 1, c + 1 ))
+    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c - 1))
+    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c ))
+    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c + 1 ))
 
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c - 1))
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c ))
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r - 1, c + 1 ))
+    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c - 1))
+    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c ))
+    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c + 1 ))
 
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r, c - 1))
-    board.addCheckingPiece(pieceColour, piece.king, createPos(r, c + 1))
+    scanMethod(board, pieceColour, piece.king, createPos(r, c - 1))
+    scanMethod(board, pieceColour, piece.king, createPos(r, c + 1))
 }
 
-function plusDangerScan(board, cellPiece, pieceColour, startPos) {
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, 1))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 0))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, -1))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 0))
+function plusScan(board, cellPiece, pieceColour, startPos, scanMethod) {
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 0), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, -1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 0), scanMethod)
 }
 
-function crossDangerScan(board, cellPiece, pieceColour, startPos) {
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 1))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, -1))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 1))
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, -1))
+function crossScan(board, cellPiece, pieceColour, startPos, scanMethod) {
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, -1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, -1), scanMethod)
 }
+
+// Mark methods
 
 function markPossibleMoves(board, pos) {
     if (board.getCell(pos).piece === piece.none) {
@@ -124,4 +130,10 @@ function markPossibleMoves(board, pos) {
     }
 
 
+}
+
+// board scan methods
+
+function addCheckingPieceToPos(board, pieceColour, cellPiece, curPos, directionVec) {
+    board.addCheckingPiece(pieceColour, cellPiece, curPos, directionVec);
 }
