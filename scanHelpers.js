@@ -28,7 +28,7 @@ function dangerScan(board, startPos) {
 
 const cellScanMethodMap = {
     none: () => {},
-    pawn:  pawnScan,
+    pawn:  pawnDangerScan,
     knight: knightScan,
     bishop: (board, pieceColour, startPos, scanMethod) => (crossScan(board, piece.bishop, pieceColour, startPos, scanMethod)),
     rook: (board, pieceColour, startPos, scanMethod) => (plusScan(board, piece.rook, pieceColour, startPos, scanMethod)),
@@ -45,12 +45,8 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, 
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: startPos.r, c: startPos.c};
 
-    const legalPosition = function(r, c) {
-        return r >= 0 && r < board.getHeight() && c >= 0 && c < board.getWidth()
-    }
-
     let i = 1;
-    while (legalPosition(r + i * vy, c + i * vx)) {
+    while (board.legalPosition(r + i * vy, c + i * vx)) {
         const curPos = createPos(r + i * vy, c + i * vx);
         scanMethod(board, pieceColour, cellPiece, curPos, directionVec);
 
@@ -62,16 +58,32 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, 
     }
 }
 
-function pawnScan(board, pieceColour, startPos, scanMethod) {
+function pawnDangerScan(board, pieceColour, startPos, scanMethod) {
     const r = startPos.r;
     const c = startPos.c;
 
     if (pieceColour === colour.white) {
-        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c - 1))
-        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c + 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c - 1), createVec(-1, -1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c + 1), createVec(-1, 1))
     } else {
-        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c - 1))
-        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c + 1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c - 1), createVec(1, -1))
+        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c + 1), createVec(1, 1))
+    }
+}
+
+function pawnMoveScan(board, pieceColour, startPos, scanMethod) {
+    if (pieceColour === colour.white && board.isCellEmpty(startPos.addR(-1))) {
+        scanMethod(board, pieceColour, piece.pawn, startPos.addR(-1))
+
+        if (startPos.r === board.getHeight() - 2 && board.isCellEmpty(startPos.addR(-2))) {
+            scanMethod(board, pieceColour, piece.pawn, startPos.addR(-2));
+        }
+    } else if (board.isCellEmpty(startPos.addR(1))) {
+        scanMethod(board, pieceColour, piece.pawn, startPos.addR(1))
+
+        if (startPos.r === 1 && board.isCellEmpty(startPos.addR(2))) {
+            scanMethod(board, pieceColour, piece.pawn, startPos.addR(2));
+        }
     }
 }
 
@@ -125,15 +137,40 @@ function crossScan(board, cellPiece, pieceColour, startPos, scanMethod) {
 // Mark methods
 
 function markPossibleMoves(board, pos) {
-    if (board.getCell(pos).piece === piece.none) {
+    const cell = board.getCell(pos);
+    if (cell.piece === piece.none) {
         return false;
     }
 
+    const cellScanMethod = cellScanMethodMap[cell.piece];
+    cellScanMethod(board, cell.colour, pos, addPossibleMove)
 
+    if (cell.piece === piece.pawn) {
+        pawnMoveScan(board, cell.colour, pos, addPossibleMove)
+    }
 }
 
 // board scan methods
 
 function addCheckingPieceToPos(board, pieceColour, cellPiece, curPos, directionVec) {
     board.addCheckingPiece(pieceColour, cellPiece, curPos, directionVec);
+}
+
+function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
+    console.log(curPos);
+    if (!board.legalPosition(curPos)) return;
+    if (cellPiece === piece.none) return;
+    if (cellPiece === piece.pawn && board.isCellEmpty(curPos) && directionVec !== undefined) return;
+
+    if (board.isCellEmpty(curPos)) {
+        board.setMovePossibleOnCell(curPos);
+        return;
+    }
+
+    if (board.colourAtCell(curPos) !== pieceColour) {
+        if (cellPiece === piece.pawn && directionVec === undefined) return;
+        if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
+        board.setMovePossibleOnCell(curPos);
+    }
+
 }

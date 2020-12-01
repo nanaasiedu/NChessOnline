@@ -18,21 +18,29 @@ class Position {
         this.r = r;
         this.c = c;
     }
+
+    addC(c) {
+        return createPos(this.r, this.c + c);
+    }
+
+    addR(r) {
+        return createPos(this.r + r, this.c);
+    }
+
+    add(pos) {
+        return createPos(this.r + pos.r, this.c + pos.c);
+    }
 }
 
 function createPos(r , c) { return new Position(r, c); }
 
 class Cell {
-    colour
-    piece
-    whiteCheckingPieces
-    blackCheckingPieces
-
     constructor(cellColour, cellPiece) {
         this.colour = cellColour;
         this.piece = cellPiece;
         this.whiteCheckingPieces = [];
         this.blackCheckingPieces = [];
+        this.movePossible = false;
     }
 
     clearCell() {
@@ -103,13 +111,37 @@ class Board {
         return this.getCell(pos).piece;
     }
 
+    colourAtCell(pos) {
+        return this.getCell(pos).colour;
+    }
+
+    isCellEmpty(pos) {
+        return this.getCell(pos).piece === piece.none;
+    }
+
     addCheckingPiece(pieceColour, piece, posToCheck, directionVec) {
-        if (!legalPosition(posToCheck.r, posToCheck.c)) {
+        if (!this.legalPosition(posToCheck)) {
             return;
         }
         const checkingPiecesProp = pieceColour === colour.white ? "whiteCheckingPieces" : "blackCheckingPieces";
 
         this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp].push({ piece, direction: directionVec });
+    }
+
+    setMovePossibleOnCell(pos) {
+        this.rows[pos.r][pos.c].movePossible = true;
+    }
+
+    clearPossibleMoves() {
+        for (let r = 0; r < BOARD_HEIGHT; r++) {
+            for (let c = 0; c < BOARD_WIDTH; c++) {
+                this.rows[r][c].movePossible = false;
+            }
+        }
+    }
+
+    isCellMovable(pos) {
+        return this.rows[pos.r][pos.c].movePossible;
     }
 
     isCellChecked(pos, friendlyColour) {
@@ -124,12 +156,14 @@ class Board {
     getHeight() {
         return BOARD_HEIGHT;
     }
+
+    legalPosition(pos) {
+        return pos.r >= 0 && pos.r < this.getHeight() && pos.c >= 0 && pos.c < this.getWidth()
+    }
 }
 
 Board.prototype.toString = function() {
     return `${this.rows}`;
 };
 
-function legalPosition(r, c) {
-    return r >= 0 && r < BOARD_HEIGHT && c >= 0 && c < BOARD_WIDTH
-}
+

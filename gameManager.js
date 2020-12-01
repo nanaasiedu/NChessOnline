@@ -8,12 +8,13 @@ class GameManager {
 
     selectCell(pos) {
         const cell = this.board.getCell(pos);
-        if (cell.colour !== this.currentTurnColour && cell.piece !== piece.none) {
+        if (cell.colour !== this.currentTurnColour || cell.piece === piece.none) {
             console.log("Cant make move!");
             return;
         }
 
         const canPieceMove = markPossibleMoves(this.board, pos)
+        drawBoard(this.board);
         highlightCell(pos);
         this._switchTurns();
     }

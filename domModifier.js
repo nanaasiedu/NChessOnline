@@ -35,12 +35,21 @@ function addPieceToCell(pos, board) {
     const cellPiece = board.getCell(pos);
     const cellElement = findCellElement(pos);
 
+    const currentPieceImageElement = cellElement.querySelector('img')
+    if (currentPieceImageElement) {
+        currentPieceImageElement.remove();
+    }
+
     if (cellPiece.piece !== piece.none) {
         const pieceImage = document.createElement('img');
         pieceImage.src = `images/pieces/${cellPiece.colour}_${cellPiece.piece}.png`;
         pieceImage.style.maxHeight = '100%'
         pieceImage.style.maxWidth = '100%'
         cellElement.appendChild(pieceImage);
+    }
+
+    if (board.isCellMovable(pos)) {
+        highlightCell(pos);
     }
 }
 
@@ -50,7 +59,6 @@ function selectCell(event, gameManager, r, c) {
 
 function highlightCell (pos) {
     const cellElement = findCellElement(pos);
-
     cellElement.classList.add('selected');
 }
 
