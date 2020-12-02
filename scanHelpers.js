@@ -46,7 +46,7 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, 
     const {r, c} = { r: startPos.r, c: startPos.c};
 
     let i = 1;
-    while (board.legalPosition(r + i * vy, c + i * vx)) {
+    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
         const curPos = createPos(r + i * vy, c + i * vx);
         scanMethod(board, pieceColour, cellPiece, curPos, directionVec);
 
@@ -72,16 +72,16 @@ function pawnDangerScan(board, pieceColour, startPos, scanMethod) {
 }
 
 function pawnMoveScan(board, pieceColour, startPos, scanMethod) {
-    if (pieceColour === colour.white && board.isCellEmpty(startPos.addR(-1))) {
+    if (pieceColour === colour.white && board.legalPosition(startPos.addR(-1)) && board.isCellEmpty(startPos.addR(-1))) {
         scanMethod(board, pieceColour, piece.pawn, startPos.addR(-1))
 
-        if (startPos.r === board.getHeight() - 2 && board.isCellEmpty(startPos.addR(-2))) {
+        if (startPos.r === board.getHeight() - 2 && board.legalPosition(startPos.addR(-2)) && board.isCellEmpty(startPos.addR(-2))) {
             scanMethod(board, pieceColour, piece.pawn, startPos.addR(-2));
         }
-    } else if (board.isCellEmpty(startPos.addR(1))) {
+    } else if (pieceColour === colour.black && board.legalPosition(startPos.addR(1)) && board.isCellEmpty(startPos.addR(1))) {
         scanMethod(board, pieceColour, piece.pawn, startPos.addR(1))
 
-        if (startPos.r === 1 && board.isCellEmpty(startPos.addR(2))) {
+        if (startPos.r === 1 && board.legalPosition(startPos.addR(2)) && board.isCellEmpty(startPos.addR(2))) {
             scanMethod(board, pieceColour, piece.pawn, startPos.addR(2));
         }
     }

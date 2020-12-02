@@ -121,6 +121,7 @@ class Board {
 
     removePieceAtCell(pos) {
         this.rows[pos.r][pos.c].piece = piece.none;
+        this.rows[pos.r][pos.c].colour = undefined;
     }
 
     colourAtCell(pos) {
