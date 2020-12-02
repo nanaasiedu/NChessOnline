@@ -30,6 +30,10 @@ class Position {
     add(pos) {
         return createPos(this.r + pos.r, this.c + pos.c);
     }
+
+    equals(pos) {
+        return this.r === pos.r && this.c === pos.c;
+    }
 }
 
 function createPos(r , c) { return new Position(r, c); }
@@ -58,10 +62,9 @@ const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
 class Board {
-    rows;
-
     constructor() {
         this.rows = Array(BOARD_HEIGHT);
+        this._isAnyCellMovable = false;
 
         const fillRow = function (row, r, colour, piece) {
             for (let c = 0; c < row.length; c++) {
@@ -111,6 +114,15 @@ class Board {
         return this.getCell(pos).piece;
     }
 
+    setCell(cell, pos) {
+        this.rows[pos.r][pos.c].piece = cell.piece;
+        this.rows[pos.r][pos.c].colour = cell.colour;
+    }
+
+    removePieceAtCell(pos) {
+        this.rows[pos.r][pos.c].piece = piece.none;
+    }
+
     colourAtCell(pos) {
         return this.getCell(pos).colour;
     }
@@ -129,6 +141,7 @@ class Board {
     }
 
     setMovePossibleOnCell(pos) {
+        this._isAnyCellMovable = true;
         this.rows[pos.r][pos.c].movePossible = true;
     }
 
@@ -138,6 +151,12 @@ class Board {
                 this.rows[r][c].movePossible = false;
             }
         }
+
+        this._isAnyCellMovable = false;
+    }
+
+    isAnyCellMovable() {
+        return this._isAnyCellMovable;
     }
 
     isCellMovable(pos) {

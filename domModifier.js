@@ -50,6 +50,8 @@ function addPieceToCell(pos, board) {
 
     if (board.isCellMovable(pos)) {
         highlightCell(pos);
+    } else {
+        unhighlightCell(pos);
     }
 }
 
@@ -60,6 +62,11 @@ function selectCell(event, gameManager, r, c) {
 function highlightCell (pos) {
     const cellElement = findCellElement(pos);
     cellElement.classList.add('selected');
+}
+
+function unhighlightCell (pos) {
+    const cellElement = findCellElement(pos);
+    cellElement.classList.remove('selected');
 }
 
 function showDangerCells(board) {

@@ -157,7 +157,6 @@ function addCheckingPieceToPos(board, pieceColour, cellPiece, curPos, directionV
 }
 
 function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
-    console.log(curPos);
     if (!board.legalPosition(curPos)) return;
     if (cellPiece === piece.none) return;
     if (cellPiece === piece.pawn && board.isCellEmpty(curPos) && directionVec !== undefined) return;
