@@ -13,6 +13,10 @@ const colour = Object.freeze({
     black: "black"
 })
 
+function swapColour(col) {
+    return col === colour.white ? colour.black : colour.white;
+}
+
 class Position {
     constructor(r, c) {
         this.r = r;
@@ -36,7 +40,25 @@ class Position {
     }
 }
 
-function createPos(r , c) { return new Position(r, c); }
+class Vector {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    normalise() {
+        const magnitude = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
+        return createVec(Math.round(this.x/magnitude), Math.round(this.y/magnitude));
+    }
+}
+
+function createVec(x, y) {
+    return new Vector(x, y);
+}
+
+function createPos(r, c) {
+    return new Position(r, c);
+}
 
 class Cell {
     constructor(cellColour, cellPiece) {
@@ -44,6 +66,8 @@ class Cell {
         this.piece = cellPiece;
         this.numberOfWhiteChecks = 0;
         this.numberOfBlackChecks = 0;
+        this.checkedByWhiteKing = false;
+        this.checkedByBlackKing = false;
         this.movePossible = false;
     }
 
@@ -65,6 +89,8 @@ class Board {
     constructor() {
         this.rows = Array(BOARD_HEIGHT);
         this._isAnyCellMovable = false;
+        this.whiteKingPos = createPos(7, 4);
+        this.blackKingPos = createPos(0, 4);
 
         const fillRow = function (row, r, colour, piece) {
             for (let c = 0; c < row.length; c++) {
@@ -104,7 +130,7 @@ class Board {
 
     getCell(pos) {
         const cell = this.rows[pos.r][pos.c];
-        return  {
+        return {
             piece: cell.piece,
             colour: cell.colour
         };
@@ -117,6 +143,74 @@ class Board {
     setCell(cell, pos) {
         this.rows[pos.r][pos.c].piece = cell.piece;
         this.rows[pos.r][pos.c].colour = cell.colour;
+
+        if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
+        if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
+    }
+
+    setPieceAsCheckedByKing(pieceColour) {
+        if (pieceColour === colour.white) {
+            const pos = this.whiteKingPos;
+            this.rows[pos.r][pos.c].checkedByWhiteKing = true;
+        } else {
+            const pos = this.whiteKingPos;
+            this.rows[pos.r][pos.c].checkedByBlackKing = true;
+        }
+    }
+
+    clearKingChecks() {
+        for (let r = 0; r < BOARD_HEIGHT; r++) {
+            for (let c = 0; c < BOARD_WIDTH; c++) {
+                this.rows[r][c].checkedByWhiteKing = false;
+                this.rows[r][c].checkedByBlackKing = false;
+            }
+        }
+    }
+
+    getKingPos(pieceColour) {
+        if (pieceColour === colour.white) {
+            return this.whiteKingPos;
+        } else {
+            return this.blackKingPos;
+        }
+    }
+
+    canKingMove(pieceColour) {
+        const kingPos = this.getKingPos(pieceColour);
+        const r = kingPos.r;
+        const c = kingPos.c
+
+        return this._canKingMoveToPos(createPos(r + 1, c - 1), pieceColour) ||
+            this._canKingMoveToPos(createPos(r + 1, c), pieceColour) ||
+            this._canKingMoveToPos(createPos(r + 1, c + 1), pieceColour) ||
+
+            this._canKingMoveToPos(createPos(r - 1, c - 1), pieceColour) ||
+            this._canKingMoveToPos(createPos(r - 1, c), pieceColour) ||
+            this._canKingMoveToPos(createPos(r - 1, c + 1), pieceColour) ||
+
+            this._canKingMoveToPos(createPos(r, c - 1), pieceColour) ||
+            this._canKingMoveToPos(createPos(r, c + 1), pieceColour)
+    }
+
+    _canKingMoveToPos(pos, pieceColour) {
+        if (!this.legalPosition(pos)) return false;
+        return !this.isCellChecked(pos, pieceColour) && (this.isCellEmpty(pos) || this.getCell(pos).colour !== pieceColour);
+    }
+
+    isKingChecked(pieceColour) {
+        if (pieceColour === colour.white) {
+            return this.isCellChecked(this.whiteKingPos, colour.white);
+        } else {
+            return this.isCellChecked(this.blackKingPos, colour.black);
+        }
+    }
+
+    isKingDoubleChecked(pieceColour) {
+        if (pieceColour === colour.white) {
+            return this.isCellDoubleChecked(this.whiteKingPos, colour.white);
+        } else {
+            return this.isCellDoubleChecked(this.blackKingPos, colour.black);
+        }
     }
 
     removePieceAtCell(pos) {
@@ -173,9 +267,22 @@ class Board {
         return this.rows[pos.r][pos.c].movePossible;
     }
 
+    canCellBeTaken(pos, friendlyColour) {
+        const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        const checkedByEnemyKing = friendlyColour === colour.white ? "checkedByBlackKing" : "checkedByBlackKing";
+
+        return !(this.rows[pos.r][pos.c][enemyPiecesProp] === 1 && checkedByEnemyKing) && this.isCellChecked(pos, friendlyColour);
+    }
+
     isCellChecked(pos, friendlyColour) {
+        if (!this.legalPosition(pos)) return false;
         const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
         return this.rows[pos.r][pos.c][enemyPiecesProp] > 0;
+    }
+
+    isCellDoubleChecked(pos, friendlyColour) {
+        const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        return this.rows[pos.r][pos.c][enemyPiecesProp] > 1;
     }
 
     getWidth() {
@@ -191,7 +298,7 @@ class Board {
     }
 }
 
-Board.prototype.toString = function() {
+Board.prototype.toString = function () {
     return `${this.rows}`;
 };
 

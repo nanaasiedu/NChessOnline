@@ -1,17 +1,9 @@
-class Vector {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-function createVec(x, y) {
-    return new Vector(x, y);
-}
-
 // danger scan methods
 
-function initialDangerScan(board) {
+function dangerScanBoard(board) {
+    board.clearCellChecks();
+    board.clearKingChecks();
+
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
             dangerScan(board, createPos(r, c))
@@ -154,6 +146,10 @@ function markPossibleMoves(board, pos) {
 
 function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
     board.checkCell(pieceColour, curPos);
+
+    if (cellPiece === piece.king) {
+        board.setPieceAsCheckedByKing(pieceColour);
+    }
 }
 
 function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
@@ -171,5 +167,28 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
         if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
         board.setMovePossibleOnCell(curPos);
     }
+}
 
+function isCellBlockableInDirection(board, attackingPos, defendingPos, defendingColour) {
+    const attackingColour = swapColour(defendingColour);
+    const directionVec = createVec(defendingPos.c - attackingPos.c, defendingPos.r - attackingPos.r).normalise();
+    const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
+    const {r, c} = { r: attackingPos.r, c: attackingPos.c};
+
+    let i = 1;
+    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
+        const curPos = createPos(r + i * vy, c + i * vx);
+
+        if (board.pieceAtCell(curPos) !== piece.none) {
+            return false;
+        }
+
+        if (board.isCellChecked(curPos, attackingColour)) {
+            return true;
+        }
+
+        i++;
+    }
+
+    return false;
 }

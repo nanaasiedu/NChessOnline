@@ -3,9 +3,16 @@ class GameManager {
         this.board = board;
 
         this.currentTurnColour = colour.white;
-        this.cellSelectionMode = false;
         this.currentGameState = gameState.NORMAL;
         this.currentSelectedPos = undefined;
+
+        this.checkingPiecePos = undefined;
+    }
+
+    startGame() {
+        setupDomBoard(this.board, this);
+        dangerScanBoard(this.board);
+        drawBoard(this.board);
     }
 
     selectCell(pos) {
@@ -15,6 +22,10 @@ class GameManager {
             this._pendingStateMove(pos);
         }
 
+    }
+
+    _isCurrentKingChecked() {
+        return this.board.isKingChecked(this.currentTurnColour);
     }
 
     _normalStateMove(pos) {
@@ -49,11 +60,34 @@ class GameManager {
         }
 
         const movingCell = this.board.getCell(this.currentSelectedPos);
+        const dyingCell = this.board.getCell(pos);
         this.board.setCell(movingCell,  pos)
         this.board.removePieceAtCell(this.currentSelectedPos);
+
+        dangerScanBoard(this.board);
+
+        if (this._isCurrentKingChecked()) {
+            alert("Illegal move king would be checked!");
+
+            this.board.setCell(dyingCell, pos);
+            this.board.setCell(movingCell, this.currentSelectedPos);
+
+            return;
+        }
+
         this._switchToNormalMode();
         this._switchTurns();
+        this.checkingPiecePos = undefined;
 
+        if (this._isCurrentKingChecked()) {
+            this.checkingPiecePos = pos;
+
+            console.log(this.board);
+            if(this._isCheckMate()) {
+                this.currentGameState = gameState.CHECK_MATE;
+                alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
+            }
+        }
     }
 
     _switchToNormalMode() {
@@ -70,9 +104,29 @@ class GameManager {
             this.currentTurnColour = colour.white;
         }
     }
+
+    _isCheckMate() {
+        console.log("1")
+        if (this.board.canKingMove(this.currentTurnColour)) return false;
+        console.log("2")
+        if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
+
+        console.log("3")
+        if (isCellBlockableInDirection(this.board,
+            this.checkingPiecePos,
+            this.board.getKingPos(this.currentTurnColour),
+            this.currentTurnColour)) return false;
+
+        console.log("4")
+        return !this.board.canCellBeTaken(this.checkingPiecePos, swapColour(this.currentTurnColour));
+
+
+
+    }
 }
 
 const gameState = {
     NORMAL: 0,
     PENDING_MOVE: 1,
+    CHECK_MATE: 2
 }
