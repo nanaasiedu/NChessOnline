@@ -42,8 +42,8 @@ class Cell {
     constructor(cellColour, cellPiece) {
         this.colour = cellColour;
         this.piece = cellPiece;
-        this.whiteCheckingPieces = [];
-        this.blackCheckingPieces = [];
+        this.numberOfWhiteChecks = 0;
+        this.numberOfBlackChecks = 0;
         this.movePossible = false;
     }
 
@@ -132,13 +132,13 @@ class Board {
         return this.getCell(pos).piece === piece.none;
     }
 
-    addCheckingPiece(pieceColour, piece, posToCheck, directionVec) {
+    checkCell(attackingColour, posToCheck) {
         if (!this.legalPosition(posToCheck)) {
             return;
         }
-        const checkingPiecesProp = pieceColour === colour.white ? "whiteCheckingPieces" : "blackCheckingPieces";
+        const checkingPiecesProp = attackingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
 
-        this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp].push({ piece, direction: directionVec });
+        this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp] += 1;
     }
 
     setMovePossibleOnCell(pos) {
@@ -156,6 +156,15 @@ class Board {
         this._isAnyCellMovable = false;
     }
 
+    clearCellChecks() {
+        for (let r = 0; r < BOARD_HEIGHT; r++) {
+            for (let c = 0; c < BOARD_WIDTH; c++) {
+                this.rows[r][c].numberOfWhiteChecks = 0;
+                this.rows[r][c].numberOfBlackChecks = 0;
+            }
+        }
+    }
+
     isAnyCellMovable() {
         return this._isAnyCellMovable;
     }
@@ -165,8 +174,8 @@ class Board {
     }
 
     isCellChecked(pos, friendlyColour) {
-        const enemyPiecesProp = friendlyColour === colour.white ? "blackCheckingPieces" : "whiteCheckingPieces";
-        return this.rows[pos.r][pos.c][enemyPiecesProp].length !== 0
+        const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        return this.rows[pos.r][pos.c][enemyPiecesProp] > 0;
     }
 
     getWidth() {

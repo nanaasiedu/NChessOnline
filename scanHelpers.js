@@ -23,7 +23,7 @@ function dangerScan(board, startPos) {
     const threateningCell = board.getCell(startPos)
 
     const cellScanMethod = cellScanMethodMap[threateningCell.piece];
-    cellScanMethod(board, threateningCell.colour, startPos, addCheckingPieceToPos)
+    cellScanMethod(board, threateningCell.colour, startPos, addCheckToCell)
 }
 
 const cellScanMethodMap = {
@@ -152,8 +152,8 @@ function markPossibleMoves(board, pos) {
 
 // board scan methods
 
-function addCheckingPieceToPos(board, pieceColour, cellPiece, curPos, directionVec) {
-    board.addCheckingPiece(pieceColour, cellPiece, curPos, directionVec);
+function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
+    board.checkCell(pieceColour, curPos);
 }
 
 function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
