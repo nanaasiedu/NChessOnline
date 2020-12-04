@@ -31,8 +31,8 @@ class Position {
         return createPos(this.r + r, this.c);
     }
 
-    add(pos) {
-        return createPos(this.r + pos.r, this.c + pos.c);
+    add(vec) {
+        return createPos(this.r + vec.y, this.c + vec.x);
     }
 
     equals(pos) {
@@ -49,6 +49,10 @@ class Vector {
     normalise() {
         const magnitude = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
         return createVec(Math.round(this.x/magnitude), Math.round(this.y/magnitude));
+    }
+
+    static makeDirectionVec(startPos, endPos) {
+        return createVec(endPos.c - startPos.c, endPos.r - startPos.r).normalise()
     }
 }
 
@@ -175,24 +179,33 @@ class Board {
         }
     }
 
-    canKingMove(pieceColour) {
+    canKingMove(pieceColour, attackingPos) {
         const kingPos = this.getKingPos(pieceColour);
         const r = kingPos.r;
         const c = kingPos.c
 
-        return this._canKingMoveToPos(createPos(r + 1, c - 1), pieceColour) ||
-            this._canKingMoveToPos(createPos(r + 1, c), pieceColour) ||
-            this._canKingMoveToPos(createPos(r + 1, c + 1), pieceColour) ||
+        return this._canKingMoveToPos(createPos(r + 1, c - 1), pieceColour, attackingPos) ||
+            this._canKingMoveToPos(createPos(r + 1, c), pieceColour, attackingPos) ||
+            this._canKingMoveToPos(createPos(r + 1, c + 1), pieceColour, attackingPos) ||
 
-            this._canKingMoveToPos(createPos(r - 1, c - 1), pieceColour) ||
-            this._canKingMoveToPos(createPos(r - 1, c), pieceColour) ||
-            this._canKingMoveToPos(createPos(r - 1, c + 1), pieceColour) ||
+            this._canKingMoveToPos(createPos(r - 1, c - 1), pieceColour, attackingPos) ||
+            this._canKingMoveToPos(createPos(r - 1, c), pieceColour, attackingPos) ||
+            this._canKingMoveToPos(createPos(r - 1, c + 1), pieceColour, attackingPos) ||
 
-            this._canKingMoveToPos(createPos(r, c - 1), pieceColour) ||
-            this._canKingMoveToPos(createPos(r, c + 1), pieceColour)
+            this._canKingMoveToPos(createPos(r, c - 1), pieceColour, attackingPos) ||
+            this._canKingMoveToPos(createPos(r, c + 1), pieceColour, attackingPos)
     }
 
-    _canKingMoveToPos(pos, pieceColour) {
+    _canKingMoveToPos(pos, pieceColour, attackingPos) {
+        const attackingPiece = this.pieceAtCell(attackingPos);
+        const kingPos = this.getKingPos(pieceColour);
+        const attackDirection = Vector.makeDirectionVec(attackingPos, kingPos);
+
+        if (attackingPiece === piece.king || attackingPiece === piece.pawn || attackingPos === piece.knight) return false;
+
+
+        if (kingPos.add(attackDirection).equals(pos)) return false;
+
         if (!this.legalPosition(pos)) return false;
         return !this.isCellChecked(pos, pieceColour) && (this.isCellEmpty(pos) || this.getCell(pos).colour !== pieceColour);
     }
@@ -267,11 +280,11 @@ class Board {
         return this.rows[pos.r][pos.c].movePossible;
     }
 
-    canCellBeTaken(pos, friendlyColour) {
-        const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
-        const checkedByEnemyKing = friendlyColour === colour.white ? "checkedByBlackKing" : "checkedByBlackKing";
+    canCellBeTaken(pos, defendingColour) {
+        const enemyPiecesProp = defendingColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        const checkedByEnemyKing = defendingColour === colour.white ? "checkedByBlackKing" : "checkedByWhiteKing";
 
-        return !(this.rows[pos.r][pos.c][enemyPiecesProp] === 1 && checkedByEnemyKing) && this.isCellChecked(pos, friendlyColour);
+        return !(this.rows[pos.r][pos.c][enemyPiecesProp] === 1 && checkedByEnemyKing) && this.isCellChecked(pos, defendingColour);
     }
 
     isCellChecked(pos, friendlyColour) {

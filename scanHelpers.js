@@ -171,7 +171,7 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
 
 function isCellBlockableInDirection(board, attackingPos, defendingPos, defendingColour) {
     const attackingColour = swapColour(defendingColour);
-    const directionVec = createVec(defendingPos.c - attackingPos.c, defendingPos.r - attackingPos.r).normalise();
+    const directionVec = Vector.makeDirectionVec(attackingPos, defendingPos);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: attackingPos.r, c: attackingPos.c};
 
@@ -183,7 +183,7 @@ function isCellBlockableInDirection(board, attackingPos, defendingPos, defending
             return false;
         }
 
-        if (board.isCellChecked(curPos, attackingColour)) {
+        if (board.canCellBeTaken(curPos, attackingColour)) {
             return true;
         }
 

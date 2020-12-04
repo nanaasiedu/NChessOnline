@@ -107,7 +107,7 @@ class GameManager {
 
     _isCheckMate() {
         console.log("1")
-        if (this.board.canKingMove(this.currentTurnColour)) return false;
+        if (this.board.canKingMove(this.currentTurnColour, this.checkingPiecePos)) return false;
         console.log("2")
         if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
 
