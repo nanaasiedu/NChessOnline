@@ -96,6 +96,13 @@ class Board {
         this.whiteKingPos = createPos(7, 4);
         this.blackKingPos = createPos(0, 4);
 
+        this.hasWhiteKingMoved = false;
+        this.hasLeftWhiteRookMoved = false;
+        this.hasRightWhiteRookMoved = false;
+        this.hasBlackKingMoved = false;
+        this.hasLeftBlackRookMoved = false;
+        this.hasRightBlackRookMoved = false;
+
         const fillRow = function (row, r, colour, piece) {
             for (let c = 0; c < row.length; c++) {
                 row[c] = new Cell(colour, piece)
@@ -227,6 +234,15 @@ class Board {
     }
 
     removePieceAtCell(pos) {
+        if (pos.equals(createPos(0, 4))) this.hasBlackKingMoved = true;
+        if (pos.equals(createPos(this.getHeight()-1, 4))) this.hasWhiteKingMoved = true;
+
+        if (pos.equals(createPos(0, 0))) this.hasLeftBlackRookMoved = true;
+        if (pos.equals(createPos(this.getHeight()-1, 0))) this.hasLeftWhiteRookMoved = true;
+
+        if (pos.equals(createPos(0, this.getWidth()-1))) this.hasRightBlackRookMoved = true;
+        if (pos.equals(createPos(this.getHeight()-1, this.getWidth()-1))) this.hasRightWhiteRookMoved = true;
+
         this.rows[pos.r][pos.c].piece = piece.none;
         this.rows[pos.r][pos.c].colour = undefined;
     }
@@ -281,10 +297,10 @@ class Board {
     }
 
     canCellBeTaken(pos, defendingColour) {
-        const enemyPiecesProp = defendingColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        const defendingPiecesProp = defendingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
         const checkedByEnemyKing = defendingColour === colour.white ? "checkedByBlackKing" : "checkedByWhiteKing";
 
-        return !(this.rows[pos.r][pos.c][enemyPiecesProp] === 1 && checkedByEnemyKing) && this.isCellChecked(pos, defendingColour);
+        return !(this.rows[pos.r][pos.c][defendingPiecesProp] === 1 && this.rows[pos.r][pos.c][checkedByEnemyKing]) && this.isCellChecked(pos, defendingColour);
     }
 
     isCellChecked(pos, friendlyColour) {
@@ -296,6 +312,42 @@ class Board {
     isCellDoubleChecked(pos, friendlyColour) {
         const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
         return this.rows[pos.r][pos.c][enemyPiecesProp] > 1;
+    }
+
+    canKingLeftCastle(friendlyColour) {
+        if (friendlyColour === colour.white) {
+            if (this.hasWhiteKingMoved || this.hasLeftWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(this.getHeight()-1, 0),
+                friendlyColour)
+        } else {
+            if (this.hasBlackKingMoved || this.hasLeftBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(0, 0),
+                friendlyColour)
+        }
+    }
+
+    canKingRightCastle(friendlyColour) {
+        if (friendlyColour === colour.white) {
+            if (this.hasWhiteKingMoved|| this.hasRightWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(this.getHeight()-1, this.getWidth()-1),
+                friendlyColour)
+        } else {
+            if (this.hasBlackKingMoved || this.hasRightBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(0, this.getWidth()-1),
+                friendlyColour)
+        }
     }
 
     getWidth() {

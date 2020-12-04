@@ -37,6 +37,10 @@ class GameManager {
 
         markPossibleMoves(this.board, pos);
 
+        if (cell.piece === piece.king) {
+            this._markPossibleCastlingMoves()
+        }
+
         if (!this.board.isAnyCellMovable()) {
             alert("Piece can't move");
             return;
@@ -46,6 +50,18 @@ class GameManager {
         highlightCell(pos);
         this.currentSelectedPos = pos;
         this.currentGameState = gameState.PENDING_MOVE;
+    }
+
+    _markPossibleCastlingMoves() {
+
+
+        if (this.board.canKingLeftCastle(this.currentTurnColour)) {
+            this.board.setMovePossibleOnCell(this.board.getKingPos(this.currentTurnColour).add(createVec(-2, 0)));
+        }
+
+        if (this.board.canKingRightCastle(this.currentTurnColour)) {
+            this.board.setMovePossibleOnCell(this.board.getKingPos(this.currentTurnColour).add(createVec(2, 0)));
+        }
     }
 
     _pendingStateMove(pos) {
@@ -61,8 +77,10 @@ class GameManager {
 
         const movingCell = this.board.getCell(this.currentSelectedPos);
         const dyingCell = this.board.getCell(pos);
-        this.board.setCell(movingCell,  pos)
+        this.board.setCell(movingCell, pos)
         this.board.removePieceAtCell(this.currentSelectedPos);
+
+        this._movePossibleRookCastleMove(pos, movingCell)
 
         dangerScanBoard(this.board);
 
@@ -75,6 +93,13 @@ class GameManager {
             return;
         }
 
+        if(this._isPiecePromotable(movingCell.piece, pos)) {
+            this.board.setCell(
+                { piece: piece.queen, colour: this.currentTurnColour }, pos
+            );
+            console.log(this.board)
+        }
+
         this._switchToNormalMode();
         this._switchTurns();
         this.checkingPiecePos = undefined;
@@ -83,9 +108,48 @@ class GameManager {
             this.checkingPiecePos = pos;
 
             console.log(this.board);
-            if(this._isCheckMate()) {
+            if (this._isCheckMate()) {
                 this.currentGameState = gameState.CHECK_MATE;
                 alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
+            }
+        }
+    }
+
+    _isPiecePromotable(cellPiece, pos) {
+        return (this.currentTurnColour === colour.white &&
+            cellPiece === piece.pawn &&
+            pos.r === 0) ||
+            (this.currentTurnColour === colour.black &&
+            cellPiece === piece.pawn &&
+            pos.r === this.board.getHeight()-1)
+    }
+
+    _movePossibleRookCastleMove(pos, movingCell) {
+        if(movingCell.piece === piece.king && this.currentSelectedPos.c-pos.c === -2) {
+            if (this.currentTurnColour === colour.white) {
+                const rookPos = createPos(this.board.getHeight()-1, this.board.getWidth()-1);
+                const rookCell = this.board.getCell(rookPos);
+                this.board.setCell(rookCell, pos.add(createVec(-1,0)))
+                this.board.removePieceAtCell(rookPos);
+            } else {
+                const rookPos = createPos(0, this.board.getWidth()-1);
+                const rookCell = this.board.getCell(rookPos);
+                this.board.setCell(rookCell, pos.add(createVec(-1,0)))
+                this.board.removePieceAtCell(rookPos);
+            }
+        }
+
+        if(movingCell.piece === piece.king && this.currentSelectedPos.c-pos.c === 2) {
+            if (this.currentTurnColour === colour.white) {
+                const rookPos = createPos(this.board.getHeight()-1, 0);
+                const rookCell = this.board.getCell(rookPos);
+                this.board.setCell(rookCell, pos.add(createVec(1,0)))
+                this.board.removePieceAtCell(rookPos);
+            } else {
+                const rookPos = createPos(0, 0);
+                const rookCell = this.board.getCell(rookPos);
+                this.board.setCell(rookCell, pos.add(createVec(1,0)))
+                this.board.removePieceAtCell(rookPos);
             }
         }
     }
@@ -119,7 +183,6 @@ class GameManager {
 
         console.log("4")
         return !this.board.canCellBeTaken(this.checkingPiecePos, swapColour(this.currentTurnColour));
-
 
 
     }
