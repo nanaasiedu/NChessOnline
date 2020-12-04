@@ -80,6 +80,15 @@ class GameManager {
         this.board.setCell(movingCell, pos)
         this.board.removePieceAtCell(this.currentSelectedPos);
 
+        // Enpassant
+        if (movingCell.piece === piece.pawn) {
+            const pawnDirection = Vector.makeDirectionVec(this.currentSelectedPos, pos);
+            const isPawnAttacking = pawnDirection.x !== 0;
+            if (dyingCell.piece === piece.none && isPawnAttacking) {
+                this.board.removePieceAtCell(pos.addR(-pawnDirection.y));
+            }
+        }
+
         this._movePossibleRookCastleMove(pos, movingCell)
 
         dangerScanBoard(this.board);
@@ -97,17 +106,16 @@ class GameManager {
             this.board.setCell(
                 { piece: piece.queen, colour: this.currentTurnColour }, pos
             );
-            console.log(this.board)
         }
 
         this._switchToNormalMode();
         this._switchTurns();
         this.checkingPiecePos = undefined;
+        this.board.clearEnpassant(this.currentTurnColour);
 
         if (this._isCurrentKingChecked()) {
             this.checkingPiecePos = pos;
 
-            console.log(this.board);
             if (this._isCheckMate()) {
                 this.currentGameState = gameState.CHECK_MATE;
                 alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
@@ -170,18 +178,14 @@ class GameManager {
     }
 
     _isCheckMate() {
-        console.log("1")
         if (this.board.canKingMove(this.currentTurnColour, this.checkingPiecePos)) return false;
-        console.log("2")
         if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
 
-        console.log("3")
         if (isCellBlockableInDirection(this.board,
             this.checkingPiecePos,
             this.board.getKingPos(this.currentTurnColour),
             this.currentTurnColour)) return false;
 
-        console.log("4")
         return !this.board.canCellBeTaken(this.checkingPiecePos, swapColour(this.currentTurnColour));
 
 

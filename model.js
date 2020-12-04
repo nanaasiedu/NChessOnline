@@ -103,6 +103,9 @@ class Board {
         this.hasLeftBlackRookMoved = false;
         this.hasRightBlackRookMoved = false;
 
+        this.blackEnpassantCol = undefined;
+        this.whiteEnpassantCol = undefined;
+
         const fillRow = function (row, r, colour, piece) {
             for (let c = 0; c < row.length; c++) {
                 row[c] = new Cell(colour, piece)
@@ -157,6 +160,28 @@ class Board {
 
         if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
         if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
+
+        if (cell.colour === colour.white && cell.piece === piece.pawn &&
+            this.pieceAtCell(createPos(this.getHeight()-2, pos.c)) === piece.pawn) this.whiteEnpassantCol = pos.c;
+
+        if (cell.colour === colour.black && cell.piece === piece.pawn &&
+            this.pieceAtCell(createPos(1, pos.c)) === piece.pawn) this.blackEnpassantCol = pos.c;
+    }
+
+    clearEnpassant(pieceColour) {
+        if (pieceColour === colour.white) {
+            this.whiteEnpassantCol = undefined;
+        } else {
+            this.blackEnpassantCol = undefined;
+        }
+    }
+
+    canEnpassant(pieceColour, pos) {
+        if (pieceColour === colour.white) {
+            return pos.r === 2 && this.blackEnpassantCol === (pos.c);
+        } else {
+            return pos.r === this.getHeight() - 3 && this.whiteEnpassantCol === (pos.c);
+        }
     }
 
     setPieceAsCheckedByKing(pieceColour) {

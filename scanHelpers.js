@@ -155,7 +155,10 @@ function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
 function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
     if (!board.legalPosition(curPos)) return;
     if (cellPiece === piece.none) return;
-    if (cellPiece === piece.pawn && board.isCellEmpty(curPos) && directionVec !== undefined) return;
+    if (cellPiece === piece.pawn &&
+        board.isCellEmpty(curPos) &&
+        directionVec !== undefined &&
+        !board.canEnpassant(pieceColour, curPos)) return;
 
     if (board.isCellEmpty(curPos)) {
         board.setMovePossibleOnCell(curPos);
@@ -166,6 +169,7 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
         if (cellPiece === piece.pawn && directionVec === undefined) return;
         if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
         board.setMovePossibleOnCell(curPos);
+        return;
     }
 }
 
