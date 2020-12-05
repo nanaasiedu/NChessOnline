@@ -51,8 +51,20 @@ class Vector {
         return createVec(Math.round(this.x/magnitude), Math.round(this.y/magnitude));
     }
 
+    isDiagonal() {
+        return Math.abs(this.x) > 0 && Math.abs(this.y);
+    }
+
+    neg() {
+        return createVec(-this.x, -this.y)
+    }
+
     static makeDirectionVec(startPos, endPos) {
         return createVec(endPos.c - startPos.c, endPos.r - startPos.r).normalise()
+    }
+
+    equals(vec) {
+        return this.x === vec.x && this.y === vec.y;
     }
 }
 
@@ -73,6 +85,7 @@ class Cell {
         this.checkedByWhiteKing = false;
         this.checkedByBlackKing = false;
         this.movePossible = false;
+        this.pinnedToking = false;
     }
 
     clearCell() {
@@ -120,29 +133,31 @@ class Board {
             }
         }
 
-        fillRow(this.rows[1], 1, colour.black, piece.pawn);
-        fillRow(this.rows[BOARD_HEIGHT - 2], BOARD_HEIGHT - 2, colour.white, piece.pawn);
+        fillRow(this.rows[1], 1, colour.black, piece.none);
+        fillRow(this.rows[BOARD_HEIGHT - 2], BOARD_HEIGHT - 2, colour.white, piece.none);
 
-        this.rows[0][0] = new Cell(colour.black, piece.rook);
-        this.rows[0][7] = new Cell(colour.black, piece.rook);
-        this.rows[0][1] = new Cell(colour.black, piece.knight);
-        this.rows[0][6] = new Cell(colour.black, piece.knight);
-        this.rows[0][2] = new Cell(colour.black, piece.bishop);
-        this.rows[0][5] = new Cell(colour.black, piece.bishop);
-        this.rows[0][3] = new Cell(colour.black, piece.queen);
+        this.rows[0][0] = new Cell(colour.black, piece.none);
+        this.rows[0][7] = new Cell(colour.black, piece.none);
+        this.rows[0][1] = new Cell(colour.black, piece.none);
+        this.rows[0][6] = new Cell(colour.black, piece.none);
+        this.rows[0][2] = new Cell(colour.black, piece.none);
+        this.rows[0][5] = new Cell(colour.black, piece.none);
+        this.rows[0][3] = new Cell(colour.black, piece.none);
         this.rows[0][4] = new Cell(colour.black, piece.king);
 
-        this.rows[BOARD_HEIGHT - 1][0] = new Cell(colour.white, piece.rook);
-        this.rows[BOARD_HEIGHT - 1][7] = new Cell(colour.white, piece.rook);
-        this.rows[BOARD_HEIGHT - 1][1] = new Cell(colour.white, piece.knight);
-        this.rows[BOARD_HEIGHT - 1][6] = new Cell(colour.white, piece.knight);
-        this.rows[BOARD_HEIGHT - 1][2] = new Cell(colour.white, piece.bishop);
-        this.rows[BOARD_HEIGHT - 1][5] = new Cell(colour.white, piece.bishop);
+        this.rows[BOARD_HEIGHT - 1][0] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][7] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][1] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][6] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][2] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][5] = new Cell(colour.white, piece.none);
         this.rows[BOARD_HEIGHT - 1][3] = new Cell(colour.white, piece.queen);
         this.rows[BOARD_HEIGHT - 1][4] = new Cell(colour.white, piece.king);
     }
 
     getCell(pos) {
+        if (!this.legalPosition(pos)) return undefined;
+
         const cell = this.rows[pos.r][pos.c];
         return {
             piece: cell.piece,
@@ -194,13 +209,34 @@ class Board {
         }
     }
 
-    clearKingChecks() {
+    clearCellsCheckProperties() {
         for (let r = 0; r < BOARD_HEIGHT; r++) {
             for (let c = 0; c < BOARD_WIDTH; c++) {
+                this.rows[r][c].pinnedToking = false;
                 this.rows[r][c].checkedByWhiteKing = false;
                 this.rows[r][c].checkedByBlackKing = false;
+                this.rows[r][c].numberOfWhiteChecks = 0;
+                this.rows[r][c].numberOfBlackChecks = 0;
             }
         }
+    }
+
+    setCellAsPinned(pos) {
+        this.rows[pos.r][pos.c].pinnedToking = true;
+    }
+
+    clearPossibleMoves() {
+        for (let r = 0; r < BOARD_HEIGHT; r++) {
+            for (let c = 0; c < BOARD_WIDTH; c++) {
+                this.rows[r][c].movePossible = false;
+            }
+        }
+
+        this._isAnyCellMovable = false;
+    }
+
+    isCellPinned(pos) {
+        return this.rows[pos.r][pos.c].pinnedToking;
     }
 
     getKingPos(pieceColour) {
@@ -294,25 +330,6 @@ class Board {
         this.rows[pos.r][pos.c].movePossible = true;
     }
 
-    clearPossibleMoves() {
-        for (let r = 0; r < BOARD_HEIGHT; r++) {
-            for (let c = 0; c < BOARD_WIDTH; c++) {
-                this.rows[r][c].movePossible = false;
-            }
-        }
-
-        this._isAnyCellMovable = false;
-    }
-
-    clearCellChecks() {
-        for (let r = 0; r < BOARD_HEIGHT; r++) {
-            for (let c = 0; c < BOARD_WIDTH; c++) {
-                this.rows[r][c].numberOfWhiteChecks = 0;
-                this.rows[r][c].numberOfBlackChecks = 0;
-            }
-        }
-    }
-
     isAnyCellMovable() {
         return this._isAnyCellMovable;
     }
@@ -342,6 +359,8 @@ class Board {
     canKingLeftCastle(friendlyColour) {
         if (friendlyColour === colour.white) {
             if (this.hasWhiteKingMoved || this.hasLeftWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(this.getHeight()-1, 0));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
 
             return isPathBetweenUnchecked(this,
                 this.getKingPos(friendlyColour),
@@ -349,6 +368,8 @@ class Board {
                 friendlyColour)
         } else {
             if (this.hasBlackKingMoved || this.hasLeftBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(0, 0));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
 
             return isPathBetweenUnchecked(this,
                 this.getKingPos(friendlyColour),
@@ -359,7 +380,9 @@ class Board {
 
     canKingRightCastle(friendlyColour) {
         if (friendlyColour === colour.white) {
-            if (this.hasWhiteKingMoved|| this.hasRightWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+            if (this.hasWhiteKingMoved || this.hasRightWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(this.getHeight()-1, this.getWidth()-1));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
 
             return isPathBetweenUnchecked(this,
                 this.getKingPos(friendlyColour),
@@ -367,6 +390,8 @@ class Board {
                 friendlyColour)
         } else {
             if (this.hasBlackKingMoved || this.hasRightBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(0, this.getWidth()-1));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
 
             return isPathBetweenUnchecked(this,
                 this.getKingPos(friendlyColour),
@@ -385,6 +410,10 @@ class Board {
 
     legalPosition(pos) {
         return pos.r >= 0 && pos.r < this.getHeight() && pos.c >= 0 && pos.c < this.getWidth()
+    }
+
+    hasInsufficientMaterial() {
+        return false; // TODO
     }
 }
 

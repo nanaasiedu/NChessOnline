@@ -1,8 +1,7 @@
 // danger scan methods
 
 function dangerScanBoard(board) {
-    board.clearCellChecks();
-    board.clearKingChecks();
+    board.clearCellsCheckProperties();
 
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
@@ -130,6 +129,10 @@ function crossScan(board, cellPiece, pieceColour, startPos, scanMethod) {
 
 function markPossibleMoves(board, pos) {
     const cell = board.getCell(pos);
+
+    if (cell === undefined)
+        return false;
+
     if (cell.piece === piece.none) {
         return false;
     }
@@ -147,8 +150,17 @@ function markPossibleMoves(board, pos) {
 function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
     board.checkCell(pieceColour, curPos);
 
+    const curCell = board.getCell(curPos);
+    if (curCell === undefined) return;
+
     if (cellPiece === piece.king) {
         board.setPieceAsCheckedByKing(pieceColour);
+    } else if (curCell.piece !== piece.none && curCell.colour === swapColour(pieceColour) && directionVec !== undefined) {
+        const enemyKingPos = board.getKingPos(swapColour(pieceColour));
+        const directionToKing = Vector.makeDirectionVec(curPos, enemyKingPos);
+        if (directionToKing.equals(directionVec) && isPathBetweenEmpty(board, curPos, enemyKingPos)) {
+            board.setCellAsPinned(curPos);
+        }
     }
 }
 
@@ -159,6 +171,7 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
         board.isCellEmpty(curPos) &&
         directionVec !== undefined &&
         !board.canEnpassant(pieceColour, curPos)) return;
+    if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
 
     if (board.isCellEmpty(curPos)) {
         board.setMovePossibleOnCell(curPos);
@@ -167,9 +180,7 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
 
     if (board.colourAtCell(curPos) !== pieceColour) {
         if (cellPiece === piece.pawn && directionVec === undefined) return;
-        if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
         board.setMovePossibleOnCell(curPos);
-        return;
     }
 }
 
@@ -216,4 +227,50 @@ function isPathBetweenUnchecked(board, startPos, endPos, friendlyColour) {
     }
 
     return true;
+}
+
+function isPathBetweenEmpty(board, startPos, endPos) {
+    const directionVec = Vector.makeDirectionVec(startPos, endPos);
+    const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
+    const {r, c} = { r: startPos.r, c: startPos.c};
+
+    let i = 1;
+    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
+        const curPos = createPos(r + i * vy, c + i * vx);
+
+        if (curPos.equals(endPos)) return true;
+
+        if (board.pieceAtCell(curPos) !== piece.none) {
+            return false;
+        }
+
+        i++;
+    }
+
+    return false;
+}
+
+function canPinnedPieceMove(board, pos) {
+    if (!board.isCellPinned(pos)) return true;
+    const cell = board.getCell(pos);
+    const kingPos = board.getKingPos(cell.colour);
+    const directionVec = Vector.makeDirectionVec(pos, kingPos);
+
+    if (cell.piece === piece.knight) return false;
+    if (cell.piece === piece.pawn && !directionVec.isDiagonal() && cell.colour === colour.white &&
+        board.isCellEmpty(pos.addR(-1)))
+        return true;
+    if (cell.piece === piece.pawn && !directionVec.isDiagonal() && cell.colour === colour.black &&
+        board.isCellEmpty(pos.addR(1)))
+        return true;
+    if (cell.piece === piece.bishop && directionVec.isDiagonal() &&
+        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        return true;
+    if (cell.piece === piece.rook && !directionVec.isDiagonal() &&
+        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        return true;
+    if (cell.piece === piece.queen &&
+        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        return true;
+
 }

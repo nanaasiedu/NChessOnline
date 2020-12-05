@@ -20,8 +20,42 @@ class GameManager {
             this._normalStateMove(pos);
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
             this._pendingStateMove(pos);
+
+            console.log(this.board);
+            if (!this._canColourMove() || this.board.hasInsufficientMaterial()){
+                this.currentGameState = gameState.STALE_MATE;
+                alert("STAKEMATE! DRAW")
+            }
+        }
+    }
+
+    _canColourMove() {
+        for (let r = 0; r < this.board.getHeight(); r++) {
+            for (let c = 0; c < this.board.getWidth(); c++) {
+                const curPos = createPos(r, c);
+                const curCell = this.board.getCell(curPos);
+                if (curCell.piece === piece.none || curCell.colour !== this.currentTurnColour) continue;
+
+                markPossibleMoves(this.board, curPos)
+                console.log(curCell)
+                console.log(1)
+                if (this.board.isAnyCellMovable()) {
+                    console.log(2)
+                    if (this.board.isCellPinned(curPos) && !canPinnedPieceMove(this.board, curPos)) {
+                        console.log(3)
+                        this.board.clearPossibleMoves();
+                        continue;
+
+                    }
+                    this.board.clearPossibleMoves();
+                    console.log(4)
+
+                    return true;
+                }
+            }
         }
 
+        return false;
     }
 
     _isCurrentKingChecked() {
@@ -53,8 +87,6 @@ class GameManager {
     }
 
     _markPossibleCastlingMoves() {
-
-
         if (this.board.canKingLeftCastle(this.currentTurnColour)) {
             this.board.setMovePossibleOnCell(this.board.getKingPos(this.currentTurnColour).add(createVec(-2, 0)));
         }
@@ -195,5 +227,6 @@ class GameManager {
 const gameState = {
     NORMAL: 0,
     PENDING_MOVE: 1,
-    CHECK_MATE: 2
+    CHECK_MATE: 2,
+    STALE_MATE: 3
 }
