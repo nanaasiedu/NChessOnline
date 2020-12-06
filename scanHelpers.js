@@ -1,5 +1,7 @@
 // danger scan methods
 
+import {colour, createPos, createVec, piece, swapColour, Vector} from "./model.js";
+
 function dangerScanBoard(board) {
     board.clearCellsCheckProperties();
 
@@ -274,3 +276,5 @@ function canPinnedPieceMove(board, pos) {
         return true;
 
 }
+
+export { dangerScanBoard, markPossibleMoves, isCellBlockableInDirection, isPathBetweenUnchecked, canPinnedPieceMove }

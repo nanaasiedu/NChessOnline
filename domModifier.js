@@ -1,3 +1,5 @@
+import {createPos, piece} from "./model.js";
+
 const cellId = (r, c) => `cell-${r}-${c}`
 
 function setupDomBoard(board, gameManager) {
@@ -79,3 +81,5 @@ function showDangerCells(board) {
         }
     }
 }
+
+export { setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell, showDangerCells }

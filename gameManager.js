@@ -1,3 +1,7 @@
+import {colour, createPos, createVec, piece, swapColour, Vector} from "./model.js";
+import {drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
+import {canPinnedPieceMove, dangerScanBoard, isCellBlockableInDirection, markPossibleMoves} from "./scanHelpers.js";
+
 class GameManager {
     constructor(board) {
         this.board = board;
@@ -21,7 +25,6 @@ class GameManager {
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
             this._pendingStateMove(pos);
 
-            console.log(this.board);
             if (!this._canColourMove() || this.board.hasInsufficientMaterial()){
                 this.currentGameState = gameState.STALE_MATE;
                 alert("STAKEMATE! DRAW")
@@ -37,19 +40,13 @@ class GameManager {
                 if (curCell.piece === piece.none || curCell.colour !== this.currentTurnColour) continue;
 
                 markPossibleMoves(this.board, curPos)
-                console.log(curCell)
-                console.log(1)
                 if (this.board.isAnyCellMovable()) {
-                    console.log(2)
                     if (this.board.isCellPinned(curPos) && !canPinnedPieceMove(this.board, curPos)) {
-                        console.log(3)
                         this.board.clearPossibleMoves();
                         continue;
 
                     }
                     this.board.clearPossibleMoves();
-                    console.log(4)
-
                     return true;
                 }
             }
@@ -230,3 +227,5 @@ const gameState = {
     CHECK_MATE: 2,
     STALE_MATE: 3
 }
+
+export { GameManager }

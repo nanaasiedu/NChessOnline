@@ -1,3 +1,5 @@
+import {isPathBetweenUnchecked} from "./scanHelpers.js";
+
 const piece = Object.freeze({
     none: "none",
     pawn: "pawn",
@@ -420,5 +422,7 @@ class Board {
 Board.prototype.toString = function () {
     return `${this.rows}`;
 };
+
+export { piece, colour, swapColour, Position, Vector, createPos, createVec, Board }
 
 
