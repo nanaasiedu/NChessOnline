@@ -135,24 +135,24 @@ class Board {
             }
         }
 
-        fillRow(this.rows[1], 1, colour.black, piece.none);
-        fillRow(this.rows[BOARD_HEIGHT - 2], BOARD_HEIGHT - 2, colour.white, piece.none);
+        fillRow(this.rows[1], 1, colour.black, piece.pawn);
+        fillRow(this.rows[BOARD_HEIGHT - 2], BOARD_HEIGHT - 2, colour.white, piece.pawn);
 
-        this.rows[0][0] = new Cell(colour.black, piece.none);
-        this.rows[0][7] = new Cell(colour.black, piece.none);
-        this.rows[0][1] = new Cell(colour.black, piece.none);
-        this.rows[0][6] = new Cell(colour.black, piece.none);
-        this.rows[0][2] = new Cell(colour.black, piece.none);
-        this.rows[0][5] = new Cell(colour.black, piece.none);
-        this.rows[0][3] = new Cell(colour.black, piece.none);
+        this.rows[0][0] = new Cell(colour.black, piece.rook);
+        this.rows[0][7] = new Cell(colour.black, piece.rook);
+        this.rows[0][1] = new Cell(colour.black, piece.knight);
+        this.rows[0][6] = new Cell(colour.black, piece.knight);
+        this.rows[0][2] = new Cell(colour.black, piece.bishop);
+        this.rows[0][5] = new Cell(colour.black, piece.bishop);
+        this.rows[0][3] = new Cell(colour.black, piece.queen);
         this.rows[0][4] = new Cell(colour.black, piece.king);
 
-        this.rows[BOARD_HEIGHT - 1][0] = new Cell(colour.white, piece.none);
-        this.rows[BOARD_HEIGHT - 1][7] = new Cell(colour.white, piece.none);
-        this.rows[BOARD_HEIGHT - 1][1] = new Cell(colour.white, piece.none);
-        this.rows[BOARD_HEIGHT - 1][6] = new Cell(colour.white, piece.none);
-        this.rows[BOARD_HEIGHT - 1][2] = new Cell(colour.white, piece.none);
-        this.rows[BOARD_HEIGHT - 1][5] = new Cell(colour.white, piece.none);
+        this.rows[BOARD_HEIGHT - 1][0] = new Cell(colour.white, piece.rook);
+        this.rows[BOARD_HEIGHT - 1][7] = new Cell(colour.white, piece.rook);
+        this.rows[BOARD_HEIGHT - 1][1] = new Cell(colour.white, piece.knight);
+        this.rows[BOARD_HEIGHT - 1][6] = new Cell(colour.white, piece.knight);
+        this.rows[BOARD_HEIGHT - 1][2] = new Cell(colour.white, piece.bishop);
+        this.rows[BOARD_HEIGHT - 1][5] = new Cell(colour.white, piece.bishop);
         this.rows[BOARD_HEIGHT - 1][3] = new Cell(colour.white, piece.queen);
         this.rows[BOARD_HEIGHT - 1][4] = new Cell(colour.white, piece.king);
     }
