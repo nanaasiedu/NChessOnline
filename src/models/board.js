@@ -1,82 +1,10 @@
-import {isPathBetweenUnchecked} from "./scanHelpers.js";
+import {isPathBetweenUnchecked} from "../scanHelpers.js";
+import {colour, piece} from "./piece.js";
+import {createPos} from "./position.js";
+import {Vector} from "./vector.js";
 
-const piece = Object.freeze({
-    none: "none",
-    pawn: "pawn",
-    knight: "knight",
-    bishop: "bishop",
-    rook: "rook",
-    queen: "queen",
-    king: "king"
-})
-
-const colour = Object.freeze({
-    white: "white",
-    black: "black"
-})
-
-function swapColour(col) {
-    return col === colour.white ? colour.black : colour.white;
-}
-
-class Position {
-    constructor(r, c) {
-        this.r = r;
-        this.c = c;
-    }
-
-    addC(c) {
-        return createPos(this.r, this.c + c);
-    }
-
-    addR(r) {
-        return createPos(this.r + r, this.c);
-    }
-
-    add(vec) {
-        return createPos(this.r + vec.y, this.c + vec.x);
-    }
-
-    equals(pos) {
-        return this.r === pos.r && this.c === pos.c;
-    }
-}
-
-class Vector {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    normalise() {
-        const magnitude = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
-        return createVec(Math.round(this.x/magnitude), Math.round(this.y/magnitude));
-    }
-
-    isDiagonal() {
-        return Math.abs(this.x) > 0 && Math.abs(this.y);
-    }
-
-    neg() {
-        return createVec(-this.x, -this.y)
-    }
-
-    static makeDirectionVec(startPos, endPos) {
-        return createVec(endPos.c - startPos.c, endPos.r - startPos.r).normalise()
-    }
-
-    equals(vec) {
-        return this.x === vec.x && this.y === vec.y;
-    }
-}
-
-function createVec(x, y) {
-    return new Vector(x, y);
-}
-
-function createPos(r, c) {
-    return new Position(r, c);
-}
+const BOARD_WIDTH = 8;
+const BOARD_HEIGHT = 8;
 
 class Cell {
     constructor(cellColour, cellPiece) {
@@ -100,9 +28,6 @@ class Cell {
         this.piece = piece;
     }
 }
-
-const BOARD_WIDTH = 8;
-const BOARD_HEIGHT = 8;
 
 class Board {
     constructor() {
@@ -423,6 +348,4 @@ Board.prototype.toString = function () {
     return `${this.rows}`;
 };
 
-export { piece, colour, swapColour, Position, Vector, createPos, createVec, Board }
-
-
+export { Board }

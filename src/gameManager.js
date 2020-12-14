@@ -1,6 +1,9 @@
-import {colour, createPos, createVec, piece, swapColour, Vector} from "./model.js";
+
 import {drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
 import {canPinnedPieceMove, dangerScanBoard, isCellBlockableInDirection, markPossibleMoves} from "./scanHelpers.js";
+import {colour, piece, swapColour} from "./models/piece.js";
+import {createPos} from "./models/position.js";
+import {createVec, Vector} from "./models/vector.js";
 
 class GameManager {
     constructor(board) {

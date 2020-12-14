@@ -1,5 +1,5 @@
 import {GameManager} from "./gameManager.js";
-import {Board} from "./model.js";
+import {Board} from "./models/board.js";
 
 window.onload = function () {
     const board = new Board();

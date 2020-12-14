@@ -1,4 +1,6 @@
-import {createPos, piece} from "./model.js";
+import { piece } from "./models/piece.js";
+import {createPos} from "./models/position.js";
+import {colour} from "./models/piece.js";
 
 const cellId = (r, c) => `cell-${r}-${c}`
 
