@@ -1,7 +1,4 @@
 {
-  "devDependencies": {
-    "node-static": "^0.7.11"
-  },
   "engines": {
     "node": "12.18.2"
   },
@@ -12,7 +9,9 @@
   "version": "1.0.0",
   "description": "A chess program",
   "main": "server.js",
-  "dependencies": {},
+  "dependencies": {
+    "node-static": "^0.7.11"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nanaasiedu/NChessOnline.git"
