@@ -1,5 +1,29 @@
 {
   "devDependencies": {
     "node-static": "^0.7.11"
-  }
+  },
+  "engines": {
+    "node": "12.18.2"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "nchessonline",
+  "version": "1.0.0",
+  "description": "A chess program",
+  "main": "server.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nanaasiedu/NChessOnline.git"
+  },
+  "keywords": [
+    "chess"
+  ],
+  "author": "Nana Asiedu-Ampem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nanaasiedu/NChessOnline/issues"
+  },
+  "homepage": "https://github.com/nanaasiedu/NChessOnline#readme"
 }
