@@ -1,0 +1,45 @@
+[Event "Live Chess"]
+[Site "Chess.com"]
+[Date "2020.11.15"]
+[Round "?"]
+[White "nmanvi"]
+[Black "darbsinho"]
+[Result "1-0"]
+[ECO "A11"]
+[WhiteElo "731"]
+[BlackElo "859"]
+[TimeControl "180+2"]
+[EndTime "6:00:59 PST"]
+[Termination "nmanvi won by checkmate"]
+
+1. c4 {[%timestamp 56]} 1... c6 {[%timestamp 13]} 2. c5 {[%timestamp 8]} 2... b6
+{[%timestamp 120]} 3. d4 {[%timestamp 23]} 3... bxc5 {[%timestamp 14]} 4. dxc5
+{[%timestamp 12]} 4... Nf6 {[%timestamp 86]} 5. e4 {[%timestamp 60]} 5... d6
+{[%timestamp 46]} 6. cxd6 {[%timestamp 54]} 6... exd6 {[%timestamp 23]} 7. Nf3
+{[%timestamp 80]} 7... Nbd7 {[%timestamp 59]} 8. Nc3 {[%timestamp 130]} 8... Be7
+{[%timestamp 19]} 9. Bc4 {[%timestamp 71]} 9... O-O {[%timestamp 142]} 10. O-O
+{[%timestamp 12]} 10... Nb6 {[%timestamp 89]} 11. Bb3 {[%timestamp 125]} 11...
+h6 {[%timestamp 138]} 12. Re1 {[%timestamp 24]} 12... Bb7 {[%timestamp 161]} 13.
+e5 {[%timestamp 39]} 13... dxe5 {[%timestamp 40]} 14. Nxe5 {[%timestamp 82]}
+14... Qxd1 {[%timestamp 106]} 15. Nxd1 {[%timestamp 87]} 15... Bb4 {[%timestamp
+38]} 16. Nc3 {[%timestamp 30]} 16... Rfe8 {[%timestamp 108]} 17. Bxf7+
+{[%timestamp 57]} 17... Kh7 {[%timestamp 123]} 18. Bxe8 {[%timestamp 13]} 18...
+Rxe8 {[%timestamp 10]} 19. a3 {[%timestamp 203]} 19... Bd6 {[%timestamp 63]} 20.
+Bf4 {[%timestamp 222]} 20... g5 {[%timestamp 32]} 21. Bg3 {[%timestamp 223]}
+21... c5 {[%timestamp 85]} 22. Rad1 {[%timestamp 155]} 22... Bc7 {[%timestamp
+132]} 23. b4 {[%timestamp 217]} 23... cxb4 {[%timestamp 79]} 24. axb4
+{[%timestamp 9]} 24... a6 {[%timestamp 239]} 25. b5 {[%timestamp 25]} 25... axb5
+{[%timestamp 13]} 26. Nxb5 {[%timestamp 9]} 26... Bb8 {[%timestamp 24]} 27. Nd7
+{[%timestamp 149]} 27... Nbxd7 {[%timestamp 28]} 28. Rxe8 {[%timestamp 116]}
+28... Bc6 {[%timestamp 83]} 29. Rxd7+ {[%timestamp 32]} 29... Bxd7 {[%timestamp
+30]} 30. Re7+ {[%timestamp 22]} 30... Kg6 {[%timestamp 40]} 31. Bxb8
+{[%timestamp 12]} 31... Bxb5 {[%timestamp 24]} 32. Rb7 {[%timestamp 38]} 32...
+Bc6 {[%timestamp 22]} 33. Rb6 {[%timestamp 14]} 33... Be4 {[%timestamp 40]} 34.
+Rb4 {[%timestamp 21]} 34... Bd5 {[%timestamp 24]} 35. Rb5 {[%timestamp 10]}
+35... Bc4 {[%timestamp 21]} 36. Rb4 {[%timestamp 14]} 36... Bd5 {[%timestamp
+32]} 37. Rb5 {[%timestamp 13]} 37... Kh5 {[%timestamp 17]} 38. f3 {[%timestamp
+17]} 38... Bc4 {[%timestamp 44]} 39. g4+ {[%timestamp 36]} 39... Kh4
+{[%timestamp 36]} 40. Rb4 {[%timestamp 24]} 40... Bd5 {[%timestamp 45]} 41. Bg3+
+{[%timestamp 14]} 41... Kh3 {[%timestamp 47]} 42. Rb5 {[%timestamp 24]} 42...
+Bc4 {[%timestamp 73]} 43. Rb6 {[%timestamp 20]} 43... Nd5 {[%timestamp 27]} 44.
+Rxh6# {[%timestamp 33]} 1-0

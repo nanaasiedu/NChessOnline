@@ -6,6 +6,7 @@ import {Vector} from "./vector.js";
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
+// TODO: move to cell file
 class Cell {
     constructor(cellColour, cellPiece) {
         this.colour = cellColour;
@@ -16,16 +17,6 @@ class Cell {
         this.checkedByBlackKing = false;
         this.movePossible = false;
         this.pinnedToking = false;
-    }
-
-    clearCell() {
-        this.piece = piece.none;
-        this.colour = undefined;
-    }
-
-    placePiece(colour, piece) {
-        this.colour = colour;
-        this.piece = piece;
     }
 }
 

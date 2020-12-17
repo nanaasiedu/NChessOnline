@@ -73,15 +73,4 @@ function unhighlightCell (pos) {
     cellElement.classList.remove('selected');
 }
 
-function showDangerCells(board) {
-    for (let r = 0; r < board.getHeight(); r++) {
-        for(let c = 0; c < board.getWidth(); c++) {
-            const pos = createPos(r,c);
-            if (board.isCellChecked(pos, colour.white) || board.isCellChecked(pos, colour.black)) {
-                findCellElement(pos).classList.add('selected')
-            }
-        }
-    }
-}
-
-export { setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell, showDangerCells }
+export { setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell }
