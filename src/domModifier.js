@@ -1,8 +1,10 @@
 import { piece } from "./models/piece.js";
 import {createPos} from "./models/position.js";
-import {colour} from "./models/piece.js";
 
-const cellId = (r, c) => `cell-${r}-${c}`
+const cellId = (r, c) => `cell-${convertToFile(c)}${8-r}`
+
+const ASCII_FOR_a = 97;
+const convertToFile = (c) => String.fromCharCode(ASCII_FOR_a + c);
 
 function setupDomBoard(board, gameManager) {
     const boardElement = document.getElementById('board');
@@ -73,15 +75,8 @@ function unhighlightCell (pos) {
     cellElement.classList.remove('selected');
 }
 
-function showDangerCells(board) {
-    for (let r = 0; r < board.getHeight(); r++) {
-        for(let c = 0; c < board.getWidth(); c++) {
-            const pos = createPos(r,c);
-            if (board.isCellChecked(pos, colour.white) || board.isCellChecked(pos, colour.black)) {
-                findCellElement(pos).classList.add('selected')
-            }
-        }
-    }
+function displayResult(whiteScore, blackScore) {
+    document.querySelector('.score').textContent = `${whiteScore}-${blackScore}`
 }
 
-export { setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell, showDangerCells }
+export { displayResult, setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell }
