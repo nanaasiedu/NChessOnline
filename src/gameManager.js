@@ -233,7 +233,6 @@ class GameManager {
     _isCheckMate() {
         if (this.board.canKingMove(this.currentTurnColour, this.checkingPiecePos)) return false;
         if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
-
         if (isCellBlockableInDirection(this.board,
             this.checkingPiecePos,
             this.board.getKingPos(this.currentTurnColour),

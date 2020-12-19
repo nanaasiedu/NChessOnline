@@ -2,6 +2,7 @@ import {isPathBetweenUnchecked} from "../scanHelpers.js";
 import {colour, piece} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector} from "./vector.js";
+import {swapColour} from "./piece.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
@@ -117,14 +118,9 @@ class Board {
         }
     }
 
-    setPieceAsCheckedByKing(pieceColour) {
-        if (pieceColour === colour.white) {
-            const pos = this.whiteKingPos;
-            this.rows[pos.r][pos.c].checkedByWhiteKing = true;
-        } else {
-            const pos = this.whiteKingPos;
-            this.rows[pos.r][pos.c].checkedByBlackKing = true;
-        }
+    setPieceAsCheckedByKing(attackingColour, posToCheck) {
+        const checkedByKingProp = attackingColour === colour.white ? "checkedByWhiteKing" : "checkedByBlackKing";
+        this.rows[posToCheck.r][posToCheck.c][checkedByKingProp] = true;
     }
 
     clearCellsCheckProperties() {
@@ -260,7 +256,15 @@ class Board {
         const defendingPiecesProp = defendingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
         const checkedByEnemyKing = defendingColour === colour.white ? "checkedByBlackKing" : "checkedByWhiteKing";
 
-        return !(this.rows[pos.r][pos.c][defendingPiecesProp] === 1 && this.rows[pos.r][pos.c][checkedByEnemyKing]) && this.isCellChecked(pos, defendingColour);
+        const canCellBeTakenByMultiplePieces = this.rows[pos.r][pos.c][defendingPiecesProp] > 1;
+
+        const isCellCheckedOnlyByEnemyKing = this.rows[pos.r][pos.c][checkedByEnemyKing];
+        const isCellProtectedFromEnemyKing = this.isCellChecked(pos, swapColour(defendingColour));
+        const canEnemyKingTakeCell = isCellCheckedOnlyByEnemyKing && !isCellProtectedFromEnemyKing;
+
+        const canOtherPieceTakeCell = !isCellCheckedOnlyByEnemyKing && this.isCellChecked(pos, defendingColour)
+
+        return canCellBeTakenByMultiplePieces || canEnemyKingTakeCell || canOtherPieceTakeCell;
     }
 
     isCellChecked(pos, friendlyColour) {

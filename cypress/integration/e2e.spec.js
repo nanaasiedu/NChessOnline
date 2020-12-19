@@ -7,7 +7,7 @@ context('White wins', () => {
         runTestForLANPGNFile('cypress/fixtures/white-mate-in-four.pgn');
     })
 
-    xit('game 1', () => {
+    it('game 1', () => {
         runTestForLANPGNFile('cypress/fixtures/white-win-1.pgn');
     })
 })
@@ -26,7 +26,7 @@ function runTestForLANPGNFile(fileLocation) {
     cy.readFile(fileLocation).then((pgnText) => {
         let pgnItems = pgnText.split(" ");
         let moves = pgnItems.slice(0, -1);
-        let result = pgnItems.slice(-1)[0];
+        let result = pgnItems.slice(-1)[0].substring(0, -1);
 
         for (let move of moves) {
             let before = move.substring(0, 2);

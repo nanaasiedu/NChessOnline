@@ -158,7 +158,7 @@ function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
     if (curCell === undefined) return;
 
     if (cellPiece === piece.king) {
-        board.setPieceAsCheckedByKing(pieceColour);
+        board.setPieceAsCheckedByKing(pieceColour, curPos);
     } else if (curCell.piece !== piece.none && curCell.colour === swapColour(pieceColour) && directionVec !== undefined) {
         const enemyKingPos = board.getKingPos(swapColour(pieceColour));
         const directionToKing = Vector.makeDirectionVec(curPos, enemyKingPos);
