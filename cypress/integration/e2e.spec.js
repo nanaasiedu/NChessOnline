@@ -3,12 +3,22 @@ context('White wins', () => {
         cy.visit('http://localhost:8080')
     })
 
-    it('Quick checkmate', () => {
-        runTestForLANPGNFile('cypress/fixtures/white-quick-checkmate.pgn');
+    it('mate in four', () => {
+        runTestForLANPGNFile('cypress/fixtures/white-mate-in-four.pgn');
     })
 
     xit('game 1', () => {
         runTestForLANPGNFile('cypress/fixtures/white-win-1.pgn');
+    })
+})
+
+context('Black wins', () => {
+    beforeEach(() => {
+        cy.visit('http://localhost:8080')
+    })
+
+    it('mate in four', () => {
+        runTestForLANPGNFile('cypress/fixtures/black-mate-in-four.pgn');
     })
 })
 
