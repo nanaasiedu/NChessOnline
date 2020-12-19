@@ -231,13 +231,16 @@ class GameManager {
     }
 
     _isCheckMate() {
+        console.log(1)
         if (this.board.canKingMove(this.currentTurnColour, this.checkingPiecePos)) return false;
+        console.log(2)
         if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
+        console.log(3)
         if (isCellBlockableInDirection(this.board,
             this.checkingPiecePos,
             this.board.getKingPos(this.currentTurnColour),
             this.currentTurnColour)) return false;
-
+        console.log(4)
         return !this.board.canCellBeTaken(this.checkingPiecePos, swapColour(this.currentTurnColour));
 
 

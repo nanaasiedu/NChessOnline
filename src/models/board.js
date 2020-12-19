@@ -179,17 +179,15 @@ class Board {
     }
 
     _canKingMoveToPos(pos, pieceColour, attackingPos) {
+        if (!this.legalPosition(pos)) return false;
+
         const attackingPiece = this.pieceAtCell(attackingPos);
         const kingPos = this.getKingPos(pieceColour);
         const attackDirection = Vector.makeDirectionVec(attackingPos, kingPos);
+        const isAttackerAPinner = attackingPiece === piece.bishop || attackingPiece === piece.rook || attackingPos === piece.queen
 
-        if (attackingPiece === piece.king || attackingPiece === piece.pawn || attackingPos === piece.knight) return false;
-
-
-        if (kingPos.add(attackDirection).equals(pos)) return false;
-
-        if (!this.legalPosition(pos)) return false;
-        return !this.isCellChecked(pos, pieceColour) && (this.isCellEmpty(pos) || this.getCell(pos).colour !== pieceColour);
+        if (isAttackerAPinner && kingPos.add(attackDirection).equals(pos)) return false;
+        return !this.isCellChecked(pos, pieceColour) && this.getCell(pos).colour !== pieceColour;
     }
 
     isKingChecked(pieceColour) {
