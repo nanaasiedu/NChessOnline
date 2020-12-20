@@ -157,6 +157,10 @@ function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
     const curCell = board.getCell(curPos);
     if (curCell === undefined) return;
 
+    if (cellPiece === piece.pawn) {
+        board.setPieceAsCheckedByPawn(pieceColour, curPos)
+    }
+
     if (cellPiece === piece.king) {
         board.setPieceAsCheckedByKing(pieceColour, curPos);
     } else if (curCell.piece !== piece.none && curCell.colour === swapColour(pieceColour) && directionVec !== undefined) {
@@ -189,7 +193,6 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
 }
 
 function isCellBlockableInDirection(board, attackingPos, defendingPos, defendingColour) {
-    const attackingColour = swapColour(defendingColour);
     const directionVec = Vector.makeDirectionVec(attackingPos, defendingPos);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: attackingPos.r, c: attackingPos.c};
@@ -202,7 +205,7 @@ function isCellBlockableInDirection(board, attackingPos, defendingPos, defending
             return false;
         }
 
-        if (board.canCellBeTaken(curPos, attackingColour)) {
+        if (board.canCellBeTakenByColour(curPos, defendingColour)) {
             return true;
         }
 

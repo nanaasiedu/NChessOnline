@@ -41,11 +41,10 @@ function runTestForLANPGNFile(fileLocation) {
 function runTestForLANPGN(pgnText) {
     let pgnItems = pgnText.split(" ");
     let moves = pgnItems.slice(0, -1);
-    let result = pgnItems.slice(-1)[0].substring(0, -1);
+    let result = pgnItems.slice(-1)[0].slice(0, -1);
 
     performMoves(moves);
 
-    console.log(result)
     cy.get(`.score`).should('contain', result)
 }
 
