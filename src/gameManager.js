@@ -1,9 +1,7 @@
 import {displayResult, drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
-// TODO: PUSH ALL SCAN HELPERS METHODS DOWN TO BOARD
-import {isCellBlockableInDirection, markPossibleMoves} from "./scanHelpers.js";
-import {colour, piece, swapColour} from "./models/piece.js";
+import {colour, piece} from "./models/piece.js";
 import {createVec} from "./models/vector.js";
-import {canColourMove} from "./ruleHelpers.js";
+import {canColourMove, isCheckMate} from "./ruleHelpers.js";
 
 class GameManager {
     constructor(board) {
@@ -46,7 +44,7 @@ class GameManager {
             return;
         }
 
-        markPossibleMoves(this.board, pos);
+        this.board.markPossibleMovesForPos(pos);
 
         if (cell.piece === piece.king) {
             this._markPossibleCastlingMoves()
@@ -103,7 +101,7 @@ class GameManager {
         if (this._isCurrentKingChecked()) {
             this.checkingPiecePos = destPos;
 
-            if (this._isCheckMate()) {
+            if (isCheckMate(this.board, this.currentTurnColour, this.checkingPiecePos)) {
                 this.currentGameState = gameState.CHECK_MATE;
                 let whiteScore = this.currentTurnColour === colour.white ? "0" : "1"
                 let blackScore = this.currentTurnColour === colour.white ? "1" : "0"
@@ -126,16 +124,6 @@ class GameManager {
         } else {
             this.currentTurnColour = colour.white;
         }
-    }
-
-    _isCheckMate() {
-        if (this.board.canKingMove(this.currentTurnColour, this.checkingPiecePos)) return false;
-        if (this.board.isKingDoubleChecked(this.currentTurnColour)) return true;
-        if (isCellBlockableInDirection(this.board,
-            this.checkingPiecePos,
-            this.board.getKingPos(this.currentTurnColour),
-            this.currentTurnColour)) return false;
-        return !this.board.canCellBeTakenByColour(this.checkingPiecePos, this.currentTurnColour);
     }
 }
 

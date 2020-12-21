@@ -1,10 +1,8 @@
 import {isPathBetweenUnchecked} from "../scanHelpers.js";
-import {colour, piece} from "./piece.js";
+import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
-import {Vector} from "./vector.js";
-import {swapColour} from "./piece.js";
-import {dangerScanBoard} from "../scanHelpers.js";
-import {createVec} from "./vector.js";
+import {Vector, createVec} from "./vector.js";
+import {dangerScanBoard, markPossibleMoves} from "../scanHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
@@ -449,6 +447,10 @@ class Board {
                 createPos(0, this.getWidth()-1),
                 friendlyColour)
         }
+    }
+
+    markPossibleMovesForPos(pos) {
+        markPossibleMoves(this, pos);
     }
 
     getWidth() {
