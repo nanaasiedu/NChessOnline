@@ -1,7 +1,6 @@
 import {displayResult, drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
-import {colour, piece} from "./models/piece.js";
-import {createVec} from "./models/vector.js";
-import {canColourMove, isCheckMate} from "./ruleHelpers.js";
+import {colour} from "./models/piece.js";
+import {isDraw, isCheckMate} from "./ruleHelpers.js";
 
 class GameManager {
     constructor(board) {
@@ -10,8 +9,6 @@ class GameManager {
         this.currentTurnColour = colour.white;
         this.currentGameState = gameState.NORMAL;
         this.currentSelectedPos = undefined;
-
-        this.checkingPiecePos = undefined;
     }
 
     startGame() {
@@ -24,51 +21,27 @@ class GameManager {
             this._normalStateMove(pos);
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
             this._pendingStateMove(pos);
-
-            if (!canColourMove(this.currentTurnColour, this.board) || this.board.hasInsufficientMaterial()){
-                this.currentGameState = gameState.STALE_MATE;
-                displayResult('1/2', '1/2');
-                alert("STAKEMATE! DRAW")
-            }
         }
-    }
 
-    _isCurrentKingChecked() {
-        return this.board.isKingChecked(this.currentTurnColour);
+        drawBoard(this.board);
     }
 
     _normalStateMove(pos) {
-        const cell = this.board.getCell(pos);
-        if (cell.colour !== this.currentTurnColour || cell.piece === piece.none) {
+        if (this.board.colourAtCell(pos) !== this.currentTurnColour) {
             alert("Illegal move!")
             return;
         }
 
         this.board.markPossibleMovesForPos(pos);
 
-        if (cell.piece === piece.king) {
-            this._markPossibleCastlingMoves()
-        }
-
         if (!this.board.isAnyCellMovable()) {
             alert("Piece can't move");
             return;
         }
 
-        drawBoard(this.board);
         highlightCell(pos);
         this.currentSelectedPos = pos;
         this.currentGameState = gameState.PENDING_MOVE;
-    }
-
-    _markPossibleCastlingMoves() {
-        if (this.board.canKingLeftCastle(this.currentTurnColour)) {
-            this.board.setMovePossibleOnCell(this.board.getKingPos(this.currentTurnColour).add(createVec(-2, 0)));
-        }
-
-        if (this.board.canKingRightCastle(this.currentTurnColour)) {
-            this.board.setMovePossibleOnCell(this.board.getKingPos(this.currentTurnColour).add(createVec(2, 0)));
-        }
     }
 
     _pendingStateMove(destPos) {
@@ -84,7 +57,7 @@ class GameManager {
 
         this.board.moveCell(this.currentSelectedPos, destPos)
 
-        if (this._isCurrentKingChecked()) {
+        if (this.board.isKingChecked(this.currentTurnColour)) {
             alert("Illegal move king would be checked!");
             this.board.reversePreviousMove();
 
@@ -93,29 +66,39 @@ class GameManager {
 
         this._switchToNormalMode();
         this._switchTurns();
-        this.checkingPiecePos = undefined;
 
         // TODO: Move to Board
         this.board.clearEnpassant(this.currentTurnColour);
 
-        if (this._isCurrentKingChecked()) {
-            this.checkingPiecePos = destPos;
-
-            if (isCheckMate(this.board, this.currentTurnColour, this.checkingPiecePos)) {
-                this.currentGameState = gameState.CHECK_MATE;
-                let whiteScore = this.currentTurnColour === colour.white ? "0" : "1"
-                let blackScore = this.currentTurnColour === colour.white ? "1" : "0"
-                displayResult(whiteScore, blackScore);
-                alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
-            }
+        if (isCheckMate(this.board, this.currentTurnColour, destPos)) {
+            this._endGameWithCheckMate();
+            return;
         }
+
+
+        if (isDraw(this.currentTurnColour, this.board)) {
+            this._endGameWithDraw();
+        }
+    }
+
+    _endGameWithCheckMate() {
+        this.currentGameState = gameState.CHECK_MATE;
+        let whiteScore = this.currentTurnColour === colour.white ? "0" : "1"
+        let blackScore = this.currentTurnColour === colour.white ? "1" : "0"
+        displayResult(whiteScore, blackScore);
+        alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
+    }
+
+    _endGameWithDraw() {
+        this.currentGameState = gameState.STALE_MATE;
+        displayResult('1/2', '1/2');
+        alert("STAKEMATE! DRAW")
     }
 
     _switchToNormalMode() {
         this.currentSelectedPos = undefined;
         this.board.clearPossibleMoves();
         this.currentGameState = gameState.NORMAL;
-        drawBoard(this.board);
     }
 
     _switchTurns() {
@@ -134,4 +117,4 @@ const gameState = {
     STALE_MATE: 3
 }
 
-export { GameManager }
+export {GameManager}

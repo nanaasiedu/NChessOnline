@@ -98,6 +98,10 @@ class Board {
         return this.getCell(pos).piece;
     }
 
+    colourAtCell(pos) {
+        return this.getCell(pos).colour || undefined ;
+    }
+
     setCell(cell, pos) {
         this.rows[pos.r][pos.c].piece = cell.piece;
         this.rows[pos.r][pos.c].colour = cell.colour;
@@ -344,10 +348,6 @@ class Board {
         this.rows[pos.r][pos.c].colour = undefined;
     }
 
-    colourAtCell(pos) {
-        return this.getCell(pos).colour;
-    }
-
     isCellEmpty(pos) {
         return this.getCell(pos).piece === piece.none;
     }
@@ -451,6 +451,21 @@ class Board {
 
     markPossibleMovesForPos(pos) {
         markPossibleMoves(this, pos);
+
+        const cell = this.getCell(pos);
+        if (cell.piece === piece.king) {
+            this._markPossibleCastlingMoves(cell.colour)
+        }
+    }
+
+    _markPossibleCastlingMoves(kingColour) {
+        if (this.canKingLeftCastle(kingColour)) {
+            this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(-2, 0)));
+        }
+
+        if (this.canKingRightCastle(kingColour)) {
+            this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(2, 0)));
+        }
     }
 
     getWidth() {

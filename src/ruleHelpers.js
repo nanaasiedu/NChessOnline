@@ -2,7 +2,7 @@ import {createPos} from "./models/position.js";
 import {piece} from "./models/piece.js";
 import {canPinnedPieceMove, markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
 
-export function canColourMove(curColour, board) {
+function canColourMove(curColour, board) {
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
             const curPos = createPos(r, c);
@@ -27,6 +27,7 @@ export function canColourMove(curColour, board) {
 }
 
 export function isCheckMate(board, turnColour, checkingPiecePos) {
+    if (!board.isKingChecked(turnColour)) return false;
     if (board.canKingMove(turnColour, checkingPiecePos)) return false;
     if (board.isKingDoubleChecked(turnColour)) return true;
     if (isCellBlockableInDirection(board,
@@ -34,4 +35,8 @@ export function isCheckMate(board, turnColour, checkingPiecePos) {
         board.getKingPos(turnColour),
         turnColour)) return false;
     return !board.canCellBeTakenByColour(checkingPiecePos, turnColour);
+}
+
+export function isDraw(curColour, board) {
+    return !canColourMove(curColour, board) || board.hasInsufficientMaterial();
 }
