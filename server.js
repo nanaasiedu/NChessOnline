@@ -1,8 +1,9 @@
-const nodeStatic = require('node-static');
+import nodeStatic from "node-static";
+import http from "http";
 
 const fileServer = new nodeStatic.Server('.');
 
-require('http').createServer(function (request, response) {
+http.createServer(function (request, response) {
     request.addListener('end', function () {
         fileServer.serve(request, response);
     }).resume();

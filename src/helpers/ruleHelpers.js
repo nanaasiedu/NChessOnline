@@ -1,5 +1,5 @@
-import {createPos} from "./models/position.js";
-import {piece} from "./models/piece.js";
+import {createPos} from "../models/position.js";
+import {piece} from "../models/piece.js";
 import {canPinnedPieceMove, markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
 
 function canColourMove(curColour, board) {

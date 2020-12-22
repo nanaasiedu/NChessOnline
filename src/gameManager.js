@@ -1,6 +1,6 @@
 import {displayResult, drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
 import {colour} from "./models/piece.js";
-import {isDraw, isCheckMate} from "./ruleHelpers.js";
+import {isDraw, isCheckMate} from "./helpers/ruleHelpers.js";
 
 class GameManager {
     constructor(board) {

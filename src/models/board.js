@@ -1,13 +1,12 @@
-import {isPathBetweenUnchecked} from "../scanHelpers.js";
+import {isPathBetweenUnchecked} from "../helpers/scanHelpers.js";
 import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
-import {dangerScanBoard, markPossibleMoves} from "../scanHelpers.js";
+import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
-// TODO: move to cell file
 class Cell {
     constructor(cellColour, cellPiece) {
         this.colour = cellColour;
@@ -122,7 +121,34 @@ class Board {
         this.setCell(movingCell, destPos)
         this.removePieceAtCell(movingPos);
 
-        // Enpassant
+        this._checkForEnpassant(movingPos, destPos);
+
+        this._movePossibleRookCastleMove(destPos, movingPos)
+
+        if(this._isCellPromotable(movingCell, destPos)) {
+            this._promoteCell(destPos);
+        }
+
+        dangerScanBoard(this);
+
+        this.previousMovingPos = movingPos;
+        this.previousDestPos = destPos;
+        this.previousDestCell = dyingCell;
+
+
+    }
+
+    _promoteCell(pos) {
+        const cellColour = this.colourAtCell(pos);
+        this.setCell(
+            { piece: piece.queen, colour: cellColour }, pos
+        );
+    }
+
+    _checkForEnpassant(movingPos, destPos) {
+        const movingCell = this.getCell(movingPos);
+        const dyingCell = this.getCell(destPos);
+
         if (movingCell.piece === piece.pawn) {
             const pawnDirection = Vector.makeDirectionVec(movingPos, destPos);
             const isPawnAttacking = pawnDirection.x !== 0;
@@ -137,22 +163,6 @@ class Board {
                 this.previousEnpassantPos = undefined;
             }
         }
-
-        this._movePossibleRookCastleMove(destPos, movingPos)
-
-        if(this._isCellPromotable(movingCell, destPos)) {
-            this.setCell(
-                { piece: piece.queen, colour: movingCell.colour }, destPos
-            );
-        }
-
-        dangerScanBoard(this);
-
-        this.previousMovingPos = movingPos;
-        this.previousDestPos = destPos;
-        this.previousDestCell = dyingCell;
-
-
     }
 
     reversePreviousMove() {

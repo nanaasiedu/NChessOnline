@@ -1,8 +1,8 @@
 // danger scan methods
 
-import {createPos} from "./models/position.js";
-import {colour, piece, swapColour} from "./models/piece.js";
-import {createVec, Vector} from "./models/vector.js";
+import {createPos} from "../models/position.js";
+import {colour, piece, swapColour} from "../models/piece.js";
+import {createVec, Vector} from "../models/vector.js";
 
 function dangerScanBoard(board) {
     board.clearCellsCheckProperties();
