@@ -1,11 +1,8 @@
 import { piece } from "./models/piece.js";
 import {createPos} from "./models/position.js";
+import {convertPosToChessPos} from "./notation/chessNotationHelpers.js";
 
-const createChessPos = (r, c) => `${convertToFile(c)}${8-r}`
-const cellId = (r, c) => `cell-${createChessPos(r, c)}`
-
-// TODO: Move to notation helper
-const convertToFile = (c) => String.fromCharCode('a'.charCodeAt(0) + c);
+const cellId = (r, c) => `cell-${convertPosToChessPos(createPos(r, c))}`
 
 function setupDomBoard(board, gameManager) {
     const boardElement = document.getElementById('board');

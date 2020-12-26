@@ -2,9 +2,7 @@ import {createPos} from "../models/position.js";
 import {piece} from "../models/piece.js";
 import {colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
-
-const convertFileToIndex = (file) => file.charCodeAt(0) - 'a'.charCodeAt(0);
-const convertRankToIndex = (rank) => 8 - rank * 1;
+import {convertFileToIndex, convertRankToIndex} from "./chessNotationHelpers.js";
 
 function locationNotationToPosition(location) {
     let matches = location.match(/([a-h])([1-8])/)
