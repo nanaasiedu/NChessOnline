@@ -3,13 +3,10 @@ import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
+import {getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
-
-// TODO: Move to notation helper
-const convertFileToIndex = (file) => file.charCodeAt(0) - 'a'.charCodeAt(0);
-const convertRankToIndex = (rank) => 8 - rank * 1;
 
 class Cell {
     constructor(cellColour, cellPiece) {
@@ -118,8 +115,8 @@ class Board {
     }
 
     movePiece(startChessPos, endChessPos) {
-        const startPos = this._locationNotationToPosition(startChessPos);
-        const endPos = this._locationNotationToPosition(endChessPos);
+        const startPos = locationNotationToPosition(startChessPos);
+        const endPos = locationNotationToPosition(endChessPos);
         this.moveCell(startPos, endPos);
     }
 
@@ -345,66 +342,8 @@ class Board {
         return false; // TODO
     }
 
-    // TODO: move to FEN helpers file
     getFEN() {
-        let fenRep = "";
-
-        for (let r = 0; r < BOARD_HEIGHT; r++) {
-            fenRep += this._getFENForRow(r);
-        }
-
-        return fenRep;
-    }
-
-    _locationNotationToPosition(location) {
-        let matches = location.match(/([a-h])([1-8])/)
-        if (matches === null || matches[0] !== location) throw new Error("Invalid location");
-        return createPos(convertRankToIndex(matches[2]), convertFileToIndex(matches[1]));
-    }
-
-    _getFENForRow(r) {
-        let fenRowRep = ""
-        let emptySpaceCount = 0;
-
-        for (let c = 0; c < BOARD_WIDTH; c++) {
-            const cell = this.getCell(createPos(r, c));
-            if (cell.piece === piece.none) {
-                emptySpaceCount++;
-                continue;
-            }
-
-            if (emptySpaceCount > 0) {
-                fenRowRep += emptySpaceCount
-                emptySpaceCount = 0;
-            }
-
-            const pieceRep = this._getFenCellRep(cell);
-
-            fenRowRep += pieceRep;
-        }
-
-        if (emptySpaceCount > 0) {
-            fenRowRep += emptySpaceCount
-        }
-
-        if (r < BOARD_HEIGHT - 1) {
-            fenRowRep += "/"
-        }
-
-        return fenRowRep;
-    }
-
-    _getFenCellRep(cell) {
-        const pieceRepMap = {}
-        pieceRepMap[piece.pawn] = "p";
-        pieceRepMap[piece.bishop] = "b";
-        pieceRepMap[piece.knight] = "n";
-        pieceRepMap[piece.rook] = "r";
-        pieceRepMap[piece.queen] = "q";
-        pieceRepMap[piece.king] = "k";
-
-        return cell.colour === colour.white
-            ? pieceRepMap[cell.piece].toUpperCase() : pieceRepMap[cell.piece]
+        return getFENForBoard(this);
     }
 
     _loadFEN(fen) {
