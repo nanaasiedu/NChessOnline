@@ -3,27 +3,10 @@ import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
-import {getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
+import {loadFEN, getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
-
-class Cell {
-    constructor(cellColour, cellPiece) {
-        this.colour = cellColour;
-        this.piece = cellPiece;
-
-        this.numberOfWhiteChecks = 0;
-        this.numberOfBlackChecks = 0;
-        this.checkedByWhiteKing = false;
-        this.checkedByBlackKing = false;
-        this.checkedByWhitePawn = false;
-        this.checkedByBlackPawn = false;
-
-        this.pinnedToking = false;
-        this.movePossible = false;
-    }
-}
 
 const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
@@ -44,7 +27,8 @@ class Board {
         this.blackEnpassantCol = undefined;
         this.whiteEnpassantCol = undefined;
 
-        this._loadFEN(fenRep)
+        this.rows = loadFEN(fenRep);
+        this._findKingPositions();
 
         dangerScanBoard(this);
     }
@@ -343,57 +327,7 @@ class Board {
     }
 
     getFEN() {
-        return getFENForBoard(this);
-    }
-
-    _loadFEN(fen) {
-        const pieceRepMap = {}
-        pieceRepMap["p"] = piece.pawn;
-        pieceRepMap["b"] = piece.bishop;
-        pieceRepMap["n"] = piece.knight;
-        pieceRepMap["r"] = piece.rook;
-        pieceRepMap["q"] = piece.queen;
-        pieceRepMap["k"] = piece.king;
-
-        const isNumeric = (c) => c >= '0' && c <= '9';
-
-
-        let fenOffset = 0;
-        for (let r = 0; r < this.rows.length; r++) {
-            this.rows[r] = Array(BOARD_WIDTH);
-            let emptySpaceSeen = 0;
-
-            for (let c = 0; c < this.rows[r].length; c++) {
-                let curFENPiece = fen.charAt(fenOffset);
-
-                if (curFENPiece === '/') {
-                    fenOffset++;
-                    curFENPiece = fen.charAt(fenOffset);
-                }
-
-                if (isNumeric(curFENPiece)) {
-                    this.rows[r][c] = new Cell(undefined, piece.none);
-                    emptySpaceSeen++;
-
-                    if (emptySpaceSeen === curFENPiece * 1) {
-                        fenOffset++;
-                        emptySpaceSeen = 0;
-                    }
-
-                    continue;
-                }
-
-                const isWhite = curFENPiece === curFENPiece.toUpperCase();
-                const cellPiece = pieceRepMap[curFENPiece.toLowerCase()];
-                const cellColour = isWhite ? colour.white : colour.black;
-
-                if (cellPiece === piece.king && cellColour === colour.white) this.whiteKingPos = createPos(r, c);
-                if (cellPiece === piece.king && cellColour === colour.black) this.blackKingPos = createPos(r, c);
-
-                this.rows[r][c] = new Cell(cellColour, cellPiece);
-                fenOffset++;
-            }
-        }
+        return getFENForBoard(this.rows);
     }
 
     _reversePreviousMove(dyingCell, movingPos, destPos) {
@@ -507,6 +441,16 @@ class Board {
 
         if (this.canKingRightCastle(kingColour)) {
             this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(2, 0)));
+        }
+    }
+
+    _findKingPositions() {
+        for (let r = 0; r < this.getHeight(); r++) {
+            for (let c = 0; c < this.getWidth(); c++) {
+                const cell = this.getCell(createPos(r,c));
+                if (cell.piece === piece.king && cell.colour === colour.white) this.whiteKingPos = createPos(r, c);
+                if (cell.piece === piece.king && cell.colour === colour.black) this.blackKingPos = createPos(r, c);
+            }
         }
     }
 }
