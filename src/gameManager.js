@@ -6,8 +6,6 @@ class GameManager {
     constructor(board) {
         this.board = board;
 
-        // TODO: push down current turn colour
-        this.currentTurnColour = colour.white;
         this.currentGameState = gameState.NORMAL;
         this.currentSelectedPos = undefined;
     }
@@ -27,7 +25,7 @@ class GameManager {
     }
 
     _normalStateMove(pos) {
-        if (this.board.colourAtCell(pos) !== this.currentTurnColour) {
+        if (this.board.colourAtCell(pos) !== this.board.getCurrentTurnColour()) {
             alert("Illegal move!")
             return;
         }
@@ -51,29 +49,28 @@ class GameManager {
         }
 
         this._switchToNormalMode();
-        this._switchTurns();
 
-        if (isCheckMate(this.board, this.currentTurnColour, destPos)) {
+        if (isCheckMate(this.board, destPos)) {
             this._endGameWithCheckMate();
             return;
         }
 
 
-        if (isDraw(this.currentTurnColour, this.board)) {
+        if (isDraw(this.board)) {
             this._endGameWithDraw();
         }
     }
 
     _endGameWithCheckMate() {
-        this.currentGameState = gameState.CHECK_MATE;
-        let whiteScore = this.currentTurnColour === colour.white ? "0" : "1"
-        let blackScore = this.currentTurnColour === colour.white ? "1" : "0"
+        this.currentGameState = gameState.FINISHED;
+        let whiteScore = this.board.getCurrentTurnColour() === colour.white ? "0" : "1"
+        let blackScore = this.board.getCurrentTurnColour() === colour.white ? "1" : "0"
         displayResult(whiteScore, blackScore);
-        alert(`CHECK MATE ${this.currentTurnColour === colour.white ? "black" : "white"} wins`)
+        alert(`CHECK MATE ${this.board.getCurrentTurnColour() === colour.white ? "black" : "white"} wins`)
     }
 
     _endGameWithDraw() {
-        this.currentGameState = gameState.STALE_MATE;
+        this.currentGameState = gameState.FINISHED;
         displayResult('1/2', '1/2');
         alert("STAKEMATE! DRAW")
     }
@@ -83,21 +80,12 @@ class GameManager {
         this.board.clearPossibleMoves();
         this.currentGameState = gameState.NORMAL;
     }
-
-    _switchTurns() {
-        if (this.currentTurnColour === colour.white) {
-            this.currentTurnColour = colour.black;
-        } else {
-            this.currentTurnColour = colour.white;
-        }
-    }
 }
 
 const gameState = {
     NORMAL: 0,
     PENDING_MOVE: 1,
-    CHECK_MATE: 2,
-    STALE_MATE: 3
+    FINISHED: 2
 }
 
 export {GameManager}

@@ -26,6 +26,7 @@ class Board {
 
         this.blackEnpassantCol = undefined;
         this.whiteEnpassantCol = undefined;
+        this.isWhiteTurn = true;
 
         this.rows = loadFEN(fenRep);
         this._findKingPositions();
@@ -51,6 +52,10 @@ class Board {
         return this.getCell(pos).colour || undefined;
     }
 
+    getCurrentTurnColour() {
+        return this.isWhiteTurn ? colour.white : colour.black;
+    }
+
     setCell(cell, pos) {
         this.rows[pos.r][pos.c].piece = cell.piece;
         this.rows[pos.r][pos.c].colour = cell.colour;
@@ -66,6 +71,9 @@ class Board {
     }
 
     _isMoveValid(movingCell, movingPos, destPos) {
+        if (this.isWhiteTurn && movingCell.colour !== colour.white ||
+            !this.isWhiteTurn && movingCell.colour !== colour.black) return false;
+
         this.markPossibleMovesForPos(movingPos);
         const canMoveToCell = this.isCellMovable(destPos);
         this.clearPossibleMoves();
@@ -96,6 +104,8 @@ class Board {
             this._reversePreviousMove(dyingCell, movingPos, destPos);
             throw new Error("Illegal Move")
         }
+
+        this.isWhiteTurn = !this.isWhiteTurn;
     }
 
     movePiece(startChessPos, endChessPos) {

@@ -1,16 +1,34 @@
 import {Board} from "../../src/models/board.js";
+import {colour} from "../../src/models/piece.js";
 
 describe("Board", function () {
     let board;
 
-    it("should default to starting chess positions", function () {
-        board = new Board();
-        expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    describe("board creation", function () {
+        it("should default to starting chess positions", function () {
+            board = new Board();
+            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+        })
+
+        it("should be able to load FEN from constructor", function () {
+            board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+        })
     })
 
-    it("should be able to load FEN from constructor", function () {
-        board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
-        expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+    describe("Switching turns", function () {
+        it("getCurrentTurnColour returns white when no colour has been set nor move played", function () {
+            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            expect(board.getCurrentTurnColour()).toEqual(colour.white);
+        })
+
+        it("getCurrentTurnColour alternates colours when a move is made", function () {
+            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            board.movePiece("a2", "a3")
+            expect(board.getCurrentTurnColour()).toEqual(colour.black);
+            board.movePiece("a7", "a6")
+            expect(board.getCurrentTurnColour()).toEqual(colour.white);
+        })
     })
 
     describe("piece movement", function () {
@@ -52,14 +70,14 @@ describe("Board", function () {
             expect(getFenBoardRep(board)).toEqual("8/p7/k7/r7/R7/K7/7P/8");
         })
 
-        // it("should throw an error when moving a colour off turn", function () {
-        //     board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-        //     expect(board.movePiece("a7", "a6").toThrow(new Error("Illegal Move")));
-        //     board.movePiece("a2", "a3");
-        //     expect(board.movePiece("a3", "a4").toThrow(new Error("Illegal Move")));
-        //     board.movePiece("a7", "a6");
-        //     expect(getFenBoardRep(board)).toEqual("rnbqkbnr/1ppppppp/p7/8/8/P7/1PPPPPPP/RNBQKBNR");
-        // })
+        it("should throw an error when moving a colour off turn", function () {
+            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            expect(function () { board.movePiece("a7", "a6") }).toThrow(new Error("Illegal Move"));
+            board.movePiece("a2", "a3");
+            expect(function () { board.movePiece("a3", "a4") }).toThrow(new Error("Illegal Move"));
+            board.movePiece("a7", "a6");
+            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/1ppppppp/p7/8/8/P7/1PPPPPPP/RNBQKBNR");
+        })
     })
 
     // TODO: Enpassant
