@@ -12,7 +12,7 @@ function canColourMove(curColour, board) {
             // TODO: Move down into board
             markPossibleMoves(board, curPos)
             if (board.isAnyCellMovable()) {
-                if (board.isCellPinned(curPos) && !canPinnedPieceMove(board, curPos)) {
+                if (!canPinnedPieceMove(board, curPos)) {
                     board.clearPossibleMoves();
                     continue;
 

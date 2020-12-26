@@ -134,12 +134,7 @@ function crossScan(board, cellPiece, pieceColour, startPos, scanMethod) {
 function markPossibleMoves(board, pos) {
     const cell = board.getCell(pos);
 
-    if (cell === undefined)
-        return false;
-
-    if (cell.piece === piece.none) {
-        return false;
-    }
+    if (cell === undefined || cell.piece === piece.none) return;
 
     const cellScanMethod = cellScanMethodMap[cell.piece];
     cellScanMethod(board, cell.colour, pos, addPossibleMove)

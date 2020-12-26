@@ -6,6 +6,7 @@ class GameManager {
     constructor(board) {
         this.board = board;
 
+        // TODO: push down current turn colour
         this.currentTurnColour = colour.white;
         this.currentGameState = gameState.NORMAL;
         this.currentSelectedPos = undefined;
@@ -21,21 +22,13 @@ class GameManager {
             this._normalStateMove(pos);
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
             this._pendingStateMove(pos);
+            drawBoard(this.board);
         }
-
-        drawBoard(this.board);
     }
 
     _normalStateMove(pos) {
         if (this.board.colourAtCell(pos) !== this.currentTurnColour) {
             alert("Illegal move!")
-            return;
-        }
-
-        this.board.markPossibleMovesForPos(pos);
-
-        if (!this.board.isAnyCellMovable()) {
-            alert("Piece can't move");
             return;
         }
 
@@ -50,25 +43,15 @@ class GameManager {
             return;
         }
 
-        if (!this.board.isCellMovable(destPos)) {
-            alert("Illegal Move!");
-            return;
-        }
-
-        this.board.moveCell(this.currentSelectedPos, destPos)
-
-        if (this.board.isKingChecked(this.currentTurnColour)) {
-            alert("Illegal move king would be checked!");
-            this.board.reversePreviousMove();
-
+        try {
+            this.board.moveCell(this.currentSelectedPos, destPos)
+        } catch (err) {
+            alert("Illegal move!")
             return;
         }
 
         this._switchToNormalMode();
         this._switchTurns();
-
-        // TODO: Move to Board
-        this.board.clearEnpassant(this.currentTurnColour);
 
         if (isCheckMate(this.board, this.currentTurnColour, destPos)) {
             this._endGameWithCheckMate();

@@ -1,10 +1,11 @@
 import { piece } from "./models/piece.js";
 import {createPos} from "./models/position.js";
 
-const cellId = (r, c) => `cell-${convertToFile(c)}${8-r}`
+const createChessPos = (r, c) => `${convertToFile(c)}${8-r}`
+const cellId = (r, c) => `cell-${createChessPos(r, c)}`
 
-const ASCII_FOR_a = 97;
-const convertToFile = (c) => String.fromCharCode(ASCII_FOR_a + c);
+// TODO: Move to notation helper
+const convertToFile = (c) => String.fromCharCode('a'.charCodeAt(0) + c);
 
 function setupDomBoard(board, gameManager) {
     const boardElement = document.getElementById('board');
@@ -38,7 +39,8 @@ function findCellElement(pos) {
 }
 
 function addPieceToCell(pos, board) {
-    const cellPiece = board.getCell(pos);
+    unhighlightCell(pos);
+    const cell = board.getCell(pos);
     const cellElement = findCellElement(pos);
 
     const currentPieceImageElement = cellElement.querySelector('img')
@@ -46,18 +48,12 @@ function addPieceToCell(pos, board) {
         currentPieceImageElement.remove();
     }
 
-    if (cellPiece.piece !== piece.none) {
+    if (cell.piece !== piece.none) {
         const pieceImage = document.createElement('img');
-        pieceImage.src = `images/pieces/${cellPiece.colour}_${cellPiece.piece}.png`;
+        pieceImage.src = `images/pieces/${cell.colour}_${cell.piece}.png`;
         pieceImage.style.maxHeight = '100%'
         pieceImage.style.maxWidth = '100%'
         cellElement.appendChild(pieceImage);
-    }
-
-    if (board.isCellMovable(pos)) {
-        highlightCell(pos);
-    } else {
-        unhighlightCell(pos);
     }
 }
 
