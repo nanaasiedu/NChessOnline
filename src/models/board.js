@@ -3,12 +3,12 @@ import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
-import {loadFEN, getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
+import {loadFENIsWhiteTurn, loadFENBoard, getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
-const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
 
 class Board {
     constructor(fenRep = DEFAULT_STARTING_POSITIONS_FEN) {
@@ -26,9 +26,9 @@ class Board {
 
         this.blackEnpassantCol = undefined;
         this.whiteEnpassantCol = undefined;
-        this.isWhiteTurn = true;
 
-        this.rows = loadFEN(fenRep);
+        this.rows = loadFENBoard(fenRep);
+        this.isWhiteTurn = loadFENIsWhiteTurn(fenRep);
         this._findKingPositions();
 
         dangerScanBoard(this);
@@ -337,7 +337,7 @@ class Board {
     }
 
     getFEN() {
-        return getFENForBoard(this.rows);
+        return getFENForBoard(this.rows, this.getCurrentTurnColour());
     }
 
     _reversePreviousMove(dyingCell, movingPos, destPos) {

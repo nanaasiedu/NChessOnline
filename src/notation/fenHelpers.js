@@ -1,8 +1,9 @@
 import {createPos} from "../models/position.js";
-import {piece} from "../models/piece.js";
-import {colour} from "../models/piece.js";
+import {piece, colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
 import {convertFileToIndex, convertRankToIndex} from "./chessNotationHelpers.js";
+
+const fenRegex = /(.+) ([wb])/
 
 function locationNotationToPosition(location) {
     let matches = location.match(/([a-h])([1-8])/)
@@ -10,7 +11,16 @@ function locationNotationToPosition(location) {
     return createPos(convertRankToIndex(matches[2]), convertFileToIndex(matches[1]));
 }
 
-function getFENForBoard(rows) {
+function getFENForBoard(rows, turnColour) {
+    let fenRep = "";
+
+    fenRep += convertBoardToFen(rows);
+    fenRep += ` ${convertColourToFen(turnColour)}`
+
+    return fenRep;
+}
+
+function convertBoardToFen(rows) {
     let fenRep = "";
 
     for (let r = 0; r < rows.length; r++) {
@@ -20,6 +30,10 @@ function getFENForBoard(rows) {
     }
 
     return fenRep;
+}
+
+function convertColourToFen(turnColour) {
+    return turnColour === colour.white ? "w" : "b";
 }
 
 function convertCellToFen(cell) {
@@ -79,7 +93,7 @@ function getFENForRow(row) {
     return fenRowRep;
 }
 
-function loadFEN(fen) {
+function loadFENBoard(fen) {
     const BOARD_WIDTH = 8;
     const BOARD_HEIGHT = 8;
     const rows = Array(BOARD_HEIGHT);
@@ -119,4 +133,9 @@ function loadFEN(fen) {
     return rows;
 }
 
-export { loadFEN, locationNotationToPosition, getFENForBoard }
+function loadFENIsWhiteTurn(fen) {
+    const match = fen.match(fenRegex);
+    return match === null || match[2] === "w";
+}
+
+export { loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }

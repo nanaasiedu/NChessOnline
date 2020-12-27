@@ -8,15 +8,23 @@ describe("Board", function () {
         it("should default to starting chess positions", function () {
             board = new Board();
             expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            expect(getFenTurnRep(board)).toEqual("w");
         })
 
-        it("should be able to load FEN from constructor", function () {
+        it("should be able to load FEN with turn defaults", function () {
             board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
             expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+            expect(getFenTurnRep(board)).toEqual("w");
+        })
+
+        it("should be able to load FEN with turn set", function () {
+            board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b");
+            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+            expect(getFenTurnRep(board)).toEqual("b");
         })
     })
 
-    describe("Switching turns", function () {
+    describe("turns", function () {
         it("getCurrentTurnColour returns white when no colour has been set nor move played", function () {
             board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
             expect(board.getCurrentTurnColour()).toEqual(colour.white);
@@ -26,8 +34,10 @@ describe("Board", function () {
             board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
             board.movePiece("a2", "a3")
             expect(board.getCurrentTurnColour()).toEqual(colour.black);
+            expect(getFenTurnRep(board)).toEqual("b");
             board.movePiece("a7", "a6")
             expect(board.getCurrentTurnColour()).toEqual(colour.white);
+            expect(getFenTurnRep(board)).toEqual("w");
         })
     })
 
@@ -89,6 +99,12 @@ function movePieceAndAssertBoard(board, startPos, destPos, expectedFEN) {
     expect(getFenBoardRep(board)).toEqual(expectedFEN);
 }
 
+const fenRegex = /(.+) ([wb])/
+
 function getFenBoardRep(board) {
-    return board.getFEN().substring(0, 71);
+    return board.getFEN().match(fenRegex)[1];
+}
+
+function getFenTurnRep(board) {
+    return board.getFEN().match(fenRegex)[2];
 }
