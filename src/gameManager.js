@@ -55,7 +55,6 @@ class GameManager {
             return;
         }
 
-
         if (isDraw(this.board)) {
             this._endGameWithDraw();
         }
