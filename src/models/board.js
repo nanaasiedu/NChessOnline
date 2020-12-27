@@ -29,11 +29,12 @@ class Board {
 
         this.rows = loadFENBoard(fenRep);
         this.isWhiteTurn = loadFENIsWhiteTurn(fenRep);
-        this._findKingPositions();
+        this.#findKingPositions();
 
         dangerScanBoard(this);
     }
 
+    // TODO: Test
     getCell(pos) {
         if (!this.legalPosition(pos)) return undefined;
 
@@ -44,10 +45,12 @@ class Board {
         };
     }
 
+    // TODO: Test
     pieceAtCell(pos) {
         return this.getCell(pos).piece;
     }
 
+    // TODO: Test
     colourAtCell(pos) {
         return this.getCell(pos).colour || undefined;
     }
@@ -56,52 +59,28 @@ class Board {
         return this.isWhiteTurn ? colour.white : colour.black;
     }
 
-    setCell(cell, pos) {
-        this.rows[pos.r][pos.c].piece = cell.piece;
-        this.rows[pos.r][pos.c].colour = cell.colour;
-
-        if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
-        if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
-
-        if (cell.colour === colour.white && cell.piece === piece.pawn &&
-            this.pieceAtCell(createPos(this.getHeight() - 2, pos.c)) === piece.pawn) this.whiteEnpassantCol = pos.c;
-
-        if (cell.colour === colour.black && cell.piece === piece.pawn &&
-            this.pieceAtCell(createPos(1, pos.c)) === piece.pawn) this.blackEnpassantCol = pos.c;
-    }
-
-    _isMoveValid(movingCell, movingPos, destPos) {
-        if (this.isWhiteTurn && movingCell.colour !== colour.white ||
-            !this.isWhiteTurn && movingCell.colour !== colour.black) return false;
-
-        this.markPossibleMovesForPos(movingPos);
-        const canMoveToCell = this.isCellMovable(destPos);
-        this.clearPossibleMoves();
-        return canMoveToCell;
-    }
-
     moveCell(movingPos, destPos) {
         const movingCell = this.getCell(movingPos);
 
-        if (!this._isMoveValid(movingCell, movingPos, destPos)) throw new Error("Illegal Move");
+        if (!this.#isMoveValid(movingCell, movingPos, destPos)) throw new Error("Illegal Move");
 
         const dyingCell = this.getCell(destPos);
-        this.setCell(movingCell, destPos)
-        this.removePieceAtCell(movingPos);
+        this.#setCell(movingCell, destPos)
+        this.#removePieceAtCell(movingPos);
 
-        this._checkForEnpassant(movingPos, destPos);
+        this.#checkForEnpassant(movingPos, destPos);
 
-        this._movePossibleRookCastleMove(destPos, movingPos)
+        this.#movePossibleRookCastleMove(destPos, movingPos)
 
-        if (this._isCellPromotable(movingCell, destPos)) {
-            this._promoteCell(destPos);
+        if (this.#isCellPromotable(movingCell, destPos)) {
+            this.#promoteCell(destPos);
         }
 
         dangerScanBoard(this);
 
         const curColour = movingCell.colour;
         if (this.isKingChecked(curColour)) {
-            this._reversePreviousMove(dyingCell, movingPos, destPos);
+            this.#reversePreviousMove(dyingCell, movingPos, destPos);
             throw new Error("Illegal Move")
         }
 
@@ -114,6 +93,7 @@ class Board {
         this.moveCell(startPos, endPos);
     }
 
+    // TODO: test
     canEnpassant(pieceColour, pos) {
         if (pieceColour === colour.white) {
             return pos.r === 2 && this.blackEnpassantCol === (pos.c);
@@ -122,6 +102,7 @@ class Board {
         }
     }
 
+    // TODO: test
     setPieceAsCheckedByKing(attackingColour, posToCheck) {
         if (!this.legalPosition(posToCheck)) return undefined;
 
@@ -129,6 +110,7 @@ class Board {
         this.rows[posToCheck.r][posToCheck.c][checkedByKingProp] = true;
     }
 
+    // TODO: test
     setPieceAsCheckedByPawn(attackingColour, posToCheck) {
         if (!this.legalPosition(posToCheck)) return undefined;
 
@@ -136,6 +118,7 @@ class Board {
         this.rows[posToCheck.r][posToCheck.c][checkedByPawnProp] = true;
     }
 
+    // TODO: test
     clearCellsCheckProperties() {
         for (let r = 0; r < BOARD_HEIGHT; r++) {
             for (let c = 0; c < BOARD_WIDTH; c++) {
@@ -150,10 +133,12 @@ class Board {
         }
     }
 
+    // TODO: test
     setCellAsPinned(pos) {
         this.rows[pos.r][pos.c].pinnedToking = true;
     }
 
+    // TODO: test
     clearPossibleMoves() {
         for (let r = 0; r < BOARD_HEIGHT; r++) {
             for (let c = 0; c < BOARD_WIDTH; c++) {
@@ -164,10 +149,12 @@ class Board {
         this._isAnyCellMovable = false;
     }
 
+    // TODO: test
     isCellPinned(pos) {
         return this.rows[pos.r][pos.c].pinnedToking;
     }
 
+    // TODO: test
     getKingPos(pieceColour) {
         if (pieceColour === colour.white) {
             return this.whiteKingPos;
@@ -176,23 +163,25 @@ class Board {
         }
     }
 
+    // TODO: test
     canKingMove(pieceColour, attackingPos) {
         const kingPos = this.getKingPos(pieceColour);
         const r = kingPos.r;
         const c = kingPos.c
 
-        return this._canKingMoveToPos(createPos(r + 1, c - 1), pieceColour, attackingPos) ||
-            this._canKingMoveToPos(createPos(r + 1, c), pieceColour, attackingPos) ||
-            this._canKingMoveToPos(createPos(r + 1, c + 1), pieceColour, attackingPos) ||
+        return this.#canKingMoveToPos(createPos(r + 1, c - 1), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r + 1, c), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r + 1, c + 1), pieceColour, attackingPos) ||
 
-            this._canKingMoveToPos(createPos(r - 1, c - 1), pieceColour, attackingPos) ||
-            this._canKingMoveToPos(createPos(r - 1, c), pieceColour, attackingPos) ||
-            this._canKingMoveToPos(createPos(r - 1, c + 1), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r - 1, c - 1), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r - 1, c), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r - 1, c + 1), pieceColour, attackingPos) ||
 
-            this._canKingMoveToPos(createPos(r, c - 1), pieceColour, attackingPos) ||
-            this._canKingMoveToPos(createPos(r, c + 1), pieceColour, attackingPos)
+            this.#canKingMoveToPos(createPos(r, c - 1), pieceColour, attackingPos) ||
+            this.#canKingMoveToPos(createPos(r, c + 1), pieceColour, attackingPos)
     }
 
+    // TODO: test
     isKingChecked(pieceColour) {
         if (pieceColour === colour.white) {
             return this.isCellChecked(this.whiteKingPos, colour.white);
@@ -201,6 +190,7 @@ class Board {
         }
     }
 
+    // TODO: test
     isKingDoubleChecked(pieceColour) {
         if (pieceColour === colour.white) {
             return this.isCellDoubleChecked(this.whiteKingPos, colour.white);
@@ -209,24 +199,12 @@ class Board {
         }
     }
 
-    removePieceAtCell(pos) {
-        if (pos.equals(createPos(0, 4))) this.hasBlackKingMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, 4))) this.hasWhiteKingMoved = true;
-
-        if (pos.equals(createPos(0, 0))) this.hasLeftBlackRookMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, 0))) this.hasLeftWhiteRookMoved = true;
-
-        if (pos.equals(createPos(0, this.getWidth() - 1))) this.hasRightBlackRookMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, this.getWidth() - 1))) this.hasRightWhiteRookMoved = true;
-
-        this.rows[pos.r][pos.c].piece = piece.none;
-        this.rows[pos.r][pos.c].colour = undefined;
-    }
-
+    // TODO: test
     isCellEmpty(pos) {
         return this.getCell(pos).piece === piece.none;
     }
 
+    // TODO: test
     checkCell(attackingColour, posToCheck) {
         if (!this.legalPosition(posToCheck)) {
             return;
@@ -236,15 +214,18 @@ class Board {
         this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp] += 1;
     }
 
+    // TODO: test
     setMovePossibleOnCell(pos) {
         this._isAnyCellMovable = true;
         this.rows[pos.r][pos.c].movePossible = true;
     }
 
+    // TODO: test
     isAnyCellMovable() {
         return this._isAnyCellMovable;
     }
 
+    // TODO: test
     canCellBeTakenByColour(pos, attackingColour) {
         const attackingPiecesProp = attackingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
         const checkedByAttackingKingProp = attackingColour === colour.white ? "checkedByWhiteKing" : "checkedByBlackKing";
@@ -265,40 +246,44 @@ class Board {
         return canCellBeTakenBysSeveralPieces || canSecondAttackerTakeCell || canAttackingKingTakeCell || canOtherPieceTakeCell;
     }
 
+    // TODO: test
     isCellChecked(pos, friendlyColour) {
         if (!this.legalPosition(pos)) return false;
         const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
         return this.rows[pos.r][pos.c][enemyPiecesProp] > 0;
     }
 
+    // TODO: test
     isCellDoubleChecked(pos, friendlyColour) {
         const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
         return this.rows[pos.r][pos.c][enemyPiecesProp] > 1;
     }
 
-    canKingLeftCastle(friendlyColour) {
-        if (friendlyColour === colour.white) {
-            if (this.hasWhiteKingMoved || this.hasLeftWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(this.getHeight() - 1, 0));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
-
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(this.getHeight() - 1, 0),
-                friendlyColour)
-        } else {
-            if (this.hasBlackKingMoved || this.hasLeftBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(0, 0));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
-
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(0, 0),
-                friendlyColour)
-        }
+    // TODO: test
+    getWidth() {
+        return BOARD_WIDTH;
     }
 
-    canKingRightCastle(friendlyColour) {
+    // TODO: test
+    getHeight() {
+        return BOARD_HEIGHT;
+    }
+
+    // TODO: test
+    legalPosition(pos) {
+        return pos.r >= 0 && pos.r < this.getHeight() && pos.c >= 0 && pos.c < this.getWidth()
+    }
+
+    // TODO: test
+    hasInsufficientMaterial() {
+        return false;
+    }
+
+    getFEN() {
+        return getFENForBoard(this.rows, this.getCurrentTurnColour());
+    }
+
+    #canKingRightCastle(friendlyColour) {
         if (friendlyColour === colour.white) {
             if (this.hasWhiteKingMoved || this.hasRightWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
             const cornerCell = this.getCell(createPos(this.getHeight() - 1, this.getWidth() - 1));
@@ -320,34 +305,74 @@ class Board {
         }
     }
 
-    getWidth() {
-        return BOARD_WIDTH;
+    #canKingLeftCastle(friendlyColour) {
+        if (friendlyColour === colour.white) {
+            if (this.hasWhiteKingMoved || this.hasLeftWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(this.getHeight() - 1, 0));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(this.getHeight() - 1, 0),
+                friendlyColour)
+        } else {
+            if (this.hasBlackKingMoved || this.hasLeftBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
+            const cornerCell = this.getCell(createPos(0, 0));
+            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
+
+            return isPathBetweenUnchecked(this,
+                this.getKingPos(friendlyColour),
+                createPos(0, 0),
+                friendlyColour)
+        }
     }
 
-    getHeight() {
-        return BOARD_HEIGHT;
+    #removePieceAtCell(pos) {
+        if (pos.equals(createPos(0, 4))) this.hasBlackKingMoved = true;
+        if (pos.equals(createPos(this.getHeight() - 1, 4))) this.hasWhiteKingMoved = true;
+
+        if (pos.equals(createPos(0, 0))) this.hasLeftBlackRookMoved = true;
+        if (pos.equals(createPos(this.getHeight() - 1, 0))) this.hasLeftWhiteRookMoved = true;
+
+        if (pos.equals(createPos(0, this.getWidth() - 1))) this.hasRightBlackRookMoved = true;
+        if (pos.equals(createPos(this.getHeight() - 1, this.getWidth() - 1))) this.hasRightWhiteRookMoved = true;
+
+        this.rows[pos.r][pos.c].piece = piece.none;
+        this.rows[pos.r][pos.c].colour = undefined;
     }
 
-    legalPosition(pos) {
-        return pos.r >= 0 && pos.r < this.getHeight() && pos.c >= 0 && pos.c < this.getWidth()
+    #setCell(cell, pos) {
+        this.rows[pos.r][pos.c].piece = cell.piece;
+        this.rows[pos.r][pos.c].colour = cell.colour;
+
+        if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
+        if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
+
+        if (cell.colour === colour.white && cell.piece === piece.pawn &&
+            this.pieceAtCell(createPos(this.getHeight() - 2, pos.c)) === piece.pawn) this.whiteEnpassantCol = pos.c;
+
+        if (cell.colour === colour.black && cell.piece === piece.pawn &&
+            this.pieceAtCell(createPos(1, pos.c)) === piece.pawn) this.blackEnpassantCol = pos.c;
     }
 
-    hasInsufficientMaterial() {
-        return false; // TODO
+    #isMoveValid(movingCell, movingPos, destPos) {
+        if (this.isWhiteTurn && movingCell.colour !== colour.white ||
+            !this.isWhiteTurn && movingCell.colour !== colour.black) return false;
+
+        this.markPossibleMovesForPos(movingPos);
+        const canMoveToCell = this.#isCellMovable(destPos);
+        this.clearPossibleMoves();
+        return canMoveToCell;
     }
 
-    getFEN() {
-        return getFENForBoard(this.rows, this.getCurrentTurnColour());
-    }
-
-    _reversePreviousMove(dyingCell, movingPos, destPos) {
-        this.setCell(this.getCell(destPos), movingPos)
-        this.setCell(dyingCell, destPos)
+    #reversePreviousMove(dyingCell, movingPos, destPos) {
+        this.#setCell(this.getCell(destPos), movingPos)
+        this.#setCell(dyingCell, destPos)
 
         dangerScanBoard(this);
     }
 
-    _clearEnpassant(pieceColour) {
+    #clearEnpassant(pieceColour) {
         if (pieceColour === colour.white) {
             this.whiteEnpassantCol = undefined;
         } else {
@@ -355,7 +380,7 @@ class Board {
         }
     }
 
-    isCellMovable(pos) {
+    #isCellMovable(pos) {
         return this.rows[pos.r][pos.c].movePossible;
     }
 
@@ -364,18 +389,18 @@ class Board {
 
         const cell = this.getCell(pos);
         if (cell.piece === piece.king) {
-            this._markPossibleCastlingMoves(cell.colour)
+            this.#markPossibleCastlingMoves(cell.colour)
         }
     }
 
-    _promoteCell(pos) {
+    #promoteCell(pos) {
         const cellColour = this.colourAtCell(pos);
-        this.setCell(
+        this.#setCell(
             {piece: piece.queen, colour: cellColour}, pos
         );
     }
 
-    _checkForEnpassant(movingPos, destPos) {
+    #checkForEnpassant(movingPos, destPos) {
         const movingCell = this.getCell(movingPos);
         const dyingCell = this.getCell(destPos);
 
@@ -384,13 +409,13 @@ class Board {
             const isPawnAttacking = pawnDirection.x !== 0;
             if (dyingCell.piece === piece.none && isPawnAttacking) {
                 const dyingPawnPos = destPos.addR(-pawnDirection.y);
-                this.removePieceAtCell(dyingPawnPos);
+                this.#removePieceAtCell(dyingPawnPos);
             } else {
             }
         }
     }
 
-    _isCellPromotable(cell, pos) {
+    #isCellPromotable(cell, pos) {
         return (cell.colour === colour.white &&
             cell.piece === piece.pawn &&
             pos.r === 0) ||
@@ -399,7 +424,7 @@ class Board {
                 pos.r === this.getHeight() - 1)
     }
 
-    _movePossibleRookCastleMove(destPos, movingPos) {
+    #movePossibleRookCastleMove(destPos, movingPos) {
         const movedCell = this.getCell(destPos);
         const curColour = movedCell.colour;
 
@@ -407,13 +432,13 @@ class Board {
             if (curColour === colour.white) {
                 const rookPos = createPos(this.getHeight() - 1, this.getWidth() - 1);
                 const rookCell = this.getCell(rookPos);
-                this.setCell(rookCell, destPos.add(createVec(-1, 0)))
-                this.removePieceAtCell(rookPos);
+                this.#setCell(rookCell, destPos.add(createVec(-1, 0)))
+                this.#removePieceAtCell(rookPos);
             } else {
                 const rookPos = createPos(0, this.getWidth() - 1);
                 const rookCell = this.getCell(rookPos);
-                this.setCell(rookCell, destPos.add(createVec(-1, 0)))
-                this.removePieceAtCell(rookPos);
+                this.#setCell(rookCell, destPos.add(createVec(-1, 0)))
+                this.#removePieceAtCell(rookPos);
             }
         }
 
@@ -421,18 +446,18 @@ class Board {
             if (curColour === colour.white) {
                 const rookPos = createPos(this.getHeight() - 1, 0);
                 const rookCell = this.getCell(rookPos);
-                this.setCell(rookCell, destPos.add(createVec(1, 0)))
-                this.removePieceAtCell(rookPos);
+                this.#setCell(rookCell, destPos.add(createVec(1, 0)))
+                this.#removePieceAtCell(rookPos);
             } else {
                 const rookPos = createPos(0, 0);
                 const rookCell = this.getCell(rookPos);
-                this.setCell(rookCell, destPos.add(createVec(1, 0)))
-                this.removePieceAtCell(rookPos);
+                this.#setCell(rookCell, destPos.add(createVec(1, 0)))
+                this.#removePieceAtCell(rookPos);
             }
         }
     }
 
-    _canKingMoveToPos(pos, pieceColour, attackingPos) {
+    #canKingMoveToPos(pos, pieceColour, attackingPos) {
         if (!this.legalPosition(pos)) return false;
 
         const attackingPiece = this.pieceAtCell(attackingPos);
@@ -444,17 +469,17 @@ class Board {
         return !this.isCellChecked(pos, pieceColour) && this.getCell(pos).colour !== pieceColour;
     }
 
-    _markPossibleCastlingMoves(kingColour) {
-        if (this.canKingLeftCastle(kingColour)) {
+    #markPossibleCastlingMoves(kingColour) {
+        if (this.#canKingLeftCastle(kingColour)) {
             this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(-2, 0)));
         }
 
-        if (this.canKingRightCastle(kingColour)) {
+        if (this.#canKingRightCastle(kingColour)) {
             this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(2, 0)));
         }
     }
 
-    _findKingPositions() {
+    #findKingPositions() {
         for (let r = 0; r < this.getHeight(); r++) {
             for (let c = 0; c < this.getWidth(); c++) {
                 const cell = this.getCell(createPos(r,c));

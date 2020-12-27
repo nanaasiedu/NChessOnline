@@ -92,6 +92,8 @@ describe("Board", function () {
 
     // TODO: Enpassant
 
+    // TODO: Castling
+
 })
 
 function movePieceAndAssertBoard(board, startPos, destPos, expectedFEN) {
