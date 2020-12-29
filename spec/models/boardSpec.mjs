@@ -9,6 +9,7 @@ describe("Board", function () {
             board = new Board();
             expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
             expect(getFenTurnRep(board)).toEqual("w");
+            expect(getFenCastlingRep(board)).toEqual("KQkq");
         })
 
         it("should be able to load FEN with turn defaults", function () {
@@ -21,6 +22,37 @@ describe("Board", function () {
             board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b");
             expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
             expect(getFenTurnRep(board)).toEqual("b");
+        })
+
+        it("should be able to load FEN with turn & castling positions set", function () {
+            board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b Kq");
+            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
+            expect(getFenTurnRep(board)).toEqual("b");
+            expect(getFenCastlingRep(board)).toEqual("Kq");
+        })
+
+        it("should be able to load FEN with castling if the relevant pieces are in castling positions", function () {
+            board = new Board("r3k2r/8/8/8/8/8/8/R3K2R");
+            expect(getFenCastlingRep(board)).toEqual("KQkq");
+
+            board = new Board("r3k2r/8/8/8/8/8/8/R3K3"); // Move White King-side Rook
+            expect(getFenCastlingRep(board)).toEqual("Qkq");
+
+            board = new Board("r3k2r/8/8/8/8/8/R7/4K2R b KQkq"); // Move White Queen-side Rook
+            expect(getFenCastlingRep(board)).toEqual("Kkq"); // Notice: "Q" was ignored in input
+
+            board = new Board("r3k2r/8/8/8/8/8/4K3/R6R b KQkq"); // Move White King
+            expect(getFenCastlingRep(board)).toEqual("kq"); // Notice: "KQ" was ignored in input
+
+            board = new Board("r3kr2/8/8/8/8/8/8/R3K2R"); // Move Black King-side Rook
+            expect(getFenCastlingRep(board)).toEqual("KQq");
+
+            board = new Board("4k2r/8/8/8/8/8/8/R3K2R b kq"); // Move Black Queen-side Rook
+            expect(getFenCastlingRep(board)).toEqual("k");  // Notice: "q" was ignored in input
+                                                                     // "KQ" was accepted in input despite white castling positions
+
+            board = new Board("r6r/4k3/8/8/8/8/8/R3K2R b KQkq"); // Move Black King
+            expect(getFenCastlingRep(board)).toEqual("KQ"); // Notice: "kq" was ignored in input
         })
     })
 
@@ -179,6 +211,12 @@ describe("Board", function () {
     // TODO: Enpassant
 
     // TODO: Castling
+    describe("castling moves", function () {
+        it("should allow all castling moves by default", function () {
+
+        });
+
+    })
 
 })
 
@@ -187,7 +225,7 @@ function movePieceAndAssertBoard(board, startPos, destPos, expectedFEN) {
     expect(getFenBoardRep(board)).toEqual(expectedFEN);
 }
 
-const fenRegex = /(.+) ([wb])/
+const fenRegex = /(.+) ([wb]) ?(.+)?/
 
 function getFenBoardRep(board) {
     return board.getFEN().match(fenRegex)[1];
@@ -195,4 +233,8 @@ function getFenBoardRep(board) {
 
 function getFenTurnRep(board) {
     return board.getFEN().match(fenRegex)[2];
+}
+
+function getFenCastlingRep(board) {
+    return board.getFEN().match(fenRegex)[3];
 }

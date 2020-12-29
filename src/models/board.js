@@ -3,7 +3,7 @@ import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
-import {loadFENIsWhiteTurn, loadFENBoard, getFENForBoard, locationNotationToPosition} from "../notation/fenHelpers.js";
+import {loadFENIsWhiteTurn, loadFENBoard, getFENForBoard, locationNotationToPosition, loadFENCastlingKingSide, loadFENCastlingQueenSide} from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
@@ -29,6 +29,11 @@ class Board {
 
         this.rows = loadFENBoard(fenRep);
         this.isWhiteTurn = loadFENIsWhiteTurn(fenRep);
+        this.canWhiteCastleQueenSide = loadFENCastlingQueenSide(fenRep, colour.white, this.rows);
+        this.canBlackCastleQueenSide = loadFENCastlingQueenSide(fenRep, colour.black, this.rows);
+        this.canWhiteCastleKingSide = loadFENCastlingKingSide(fenRep, colour.white, this.rows);
+        this.canBlackCastleKingSide = loadFENCastlingKingSide(fenRep, colour.black, this.rows);
+
         this.#findKingPositions();
 
         dangerScanBoard(this);
@@ -73,7 +78,12 @@ class Board {
     }
 
     getFEN() {
-        return getFENForBoard(this.rows, this.getCurrentTurnColour());
+        return getFENForBoard(this.rows, this.getCurrentTurnColour(),
+            this.canWhiteCastleKingSide,
+            this.canWhiteCastleQueenSide,
+            this.canBlackCastleKingSide,
+            this.canBlackCastleQueenSide
+        );
     }
 
     // TODO: test

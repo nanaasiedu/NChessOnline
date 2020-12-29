@@ -3,7 +3,7 @@ import {piece, colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
 import {convertFileToIndex, convertRankToIndex} from "./chessNotationHelpers.js";
 
-const fenRegex = /(.+) ([wb])/
+const fenRegex = /(.+) ([wb]) ?(.+)?/
 
 function locationNotationToPosition(location) {
     let matches = location.match(/([a-h])([1-8])/)
@@ -11,11 +11,12 @@ function locationNotationToPosition(location) {
     return createPos(convertRankToIndex(matches[2]), convertFileToIndex(matches[1]));
 }
 
-function getFENForBoard(rows, turnColour) {
+function getFENForBoard(rows, turnColour, canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide) {
     let fenRep = "";
 
     fenRep += convertBoardToFen(rows);
     fenRep += ` ${convertColourToFen(turnColour)}`
+    fenRep += ` ${canWhiteCastleKingSide ? "K" : ""}${canWhiteCastleQueenSide ? "Q" : ""}${canBlackCastleKingSide ? "k" : ""}${canBlackCastleQueenSide ? "q" : ""}`
 
     return fenRep;
 }
@@ -138,4 +139,24 @@ function loadFENIsWhiteTurn(fen) {
     return match === null || match[2] === "w";
 }
 
-export { loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }
+function loadFENCastlingQueenSide(fen, playerColour, rows) {
+    const playerRow = playerColour === colour.white ? rows.length - 1 : 0;
+    const isQueenSideRookInPosition = rows[playerRow][0].piece === piece.rook;
+    const isKingInPosition = rows[playerRow][4].piece === piece.king;
+    return isQueenSideRookInPosition && isKingInPosition && loadFenCastling(fen, "q", playerColour)
+}
+
+function loadFENCastlingKingSide(fen, playerColour, rows) {
+    const playerRow = playerColour === colour.white ? rows.length - 1 : 0;
+    const isKingSideRookInPosition = rows[playerRow][rows[0].length - 1].piece === piece.rook;
+    const isKingInPosition = rows[playerRow][4].piece === piece.king;
+    return isKingSideRookInPosition && isKingInPosition && loadFenCastling(fen, "k", playerColour)
+}
+
+function loadFenCastling(fen, castlingRep, playerColour) {
+    const repChar = playerColour === colour.white ? castlingRep.toUpperCase() : castlingRep;
+    const match = fen.match(fenRegex);
+    return match === null || match[3] === undefined || match[3].includes(repChar);
+}
+
+export { loadFENCastlingQueenSide, loadFENCastlingKingSide, loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }
