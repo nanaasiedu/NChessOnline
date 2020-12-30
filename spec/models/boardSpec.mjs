@@ -35,6 +35,12 @@ describe("Board", function () {
             board = new Board("r3k2r/8/8/8/8/8/8/R3K2R");
             expect(getFenCastlingRep(board)).toEqual("KQkq");
 
+            board = new Board("r3k2r/8/8/8/8/8/8/R3K2R w -");
+            expect(getFenCastlingRep(board)).toEqual("-");
+
+            board = new Board("8/r3k2r/8/8/8/8/R3K2R/8 w KQkq"); // Move all relevant pieces
+            expect(getFenCastlingRep(board)).toEqual("-");
+
             board = new Board("r3k2r/8/8/8/8/8/8/R3K3"); // Move White King-side Rook
             expect(getFenCastlingRep(board)).toEqual("Qkq");
 
@@ -210,10 +216,65 @@ describe("Board", function () {
 
     // TODO: Enpassant
 
-    // TODO: Castling
     describe("castling moves", function () {
-        it("should allow all castling moves by default", function () {
+        it("should allow castling moves when the castling path is clear and unchecked", function () {
+            board = new Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq");
+            movePieceAndAssertBoard(board, "e1", "g1", "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R4RK1");
+            expect(getFenCastlingRep(board)).toEqual("kq"); // white king side
+            movePieceAndAssertBoard(board, "e8", "g8", "r4rk1/pppppppp/8/8/8/8/PPPPPPPP/R4RK1");
+            expect(getFenCastlingRep(board)).toEqual("-"); // black king side
 
+            board = new Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq");
+            movePieceAndAssertBoard(board, "e1", "c1", "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/2KR3R");
+            expect(getFenCastlingRep(board)).toEqual("kq"); // white queen side
+            movePieceAndAssertBoard(board, "e8", "c8", "2kr3r/pppppppp/8/8/8/8/PPPPPPPP/2KR3R");
+            expect(getFenCastlingRep(board)).toEqual("-"); // black queen side
+
+            // Special: can rook can pass through check when castling
+            board = new Board("r3k2r/1R6/8/8/8/8/1r6/R3K2R w KQkq");
+            movePieceAndAssertBoard(board, "e1", "c1", "r3k2r/1R6/8/8/8/8/1r6/2KR3R");
+            expect(getFenCastlingRep(board)).toEqual("kq"); // white queen side
+            board = new Board("r3k2r/1R6/8/8/8/8/1r6/R3K2R b KQkq");
+            movePieceAndAssertBoard(board, "e8", "c8", "2kr3r/1R6/8/8/8/8/1r6/R3K2R");
+            expect(getFenCastlingRep(board)).toEqual("KQ"); // black queen side
+        });
+
+        it("should not allow castling moves when path is checked", function () {
+            board = new Board("r3k2r/8/2B5/2r2r2/8/8/8/R3K2R w KQkq");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+
+            board = new Board("r3k2r/8/2B5/2r2r2/8/8/8/R3K2R b KQkq");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+
+            board = new Board("r3k2r/8/2R2R2/8/8/2b5/8/R3K2R w KQkq");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+
+            board = new Board("r3k2r/8/2R2R2/8/8/2b5/8/R3K2R b KQkq");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+        });
+
+        it("should not allow castling moves when path is blocked", function () {
+            board = new Board("r1b1k1nr/8/8/8/8/8/8/RN2KB1R w KQkq");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+
+            board = new Board("r1b1k1nr/8/8/8/8/8/8/RN2KB1R b KQkq");
+            expect(function () { board.movePiece("e8", "g8") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e8", "c8") }).toThrow(new Error("Illegal Move"));
+        });
+
+        it("should not allow castling moves when relevant pieces have moved", function () {
+            board = new Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w -");
+            expect(function () { board.movePiece("e1", "g1") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e1", "c1") }).toThrow(new Error("Illegal Move"));
+
+            board = new Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b -");
+            expect(function () { board.movePiece("e8", "g8") }).toThrow(new Error("Illegal Move"));
+            expect(function () { board.movePiece("e8", "c8") }).toThrow(new Error("Illegal Move"));
         });
 
     })

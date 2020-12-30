@@ -1,9 +1,15 @@
-import {isPathBetweenUnchecked} from "../helpers/scanHelpers.js";
 import {colour, piece, swapColour} from "./piece.js";
 import {createPos} from "./position.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
-import {loadFENIsWhiteTurn, loadFENBoard, getFENForBoard, locationNotationToPosition, loadFENCastlingKingSide, loadFENCastlingQueenSide} from "../notation/fenHelpers.js";
+import {
+    loadFENIsWhiteTurn,
+    loadFENBoard,
+    getFENForBoard,
+    locationNotationToPosition,
+    loadFENCastlingKingSide,
+    loadFENCastlingQueenSide
+} from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
@@ -16,13 +22,6 @@ class Board {
         this._isAnyCellMovable = false;
         this.whiteKingPos = undefined;
         this.blackKingPos = undefined;
-
-        this.hasWhiteKingMoved = false;
-        this.hasLeftWhiteRookMoved = false;
-        this.hasRightWhiteRookMoved = false;
-        this.hasBlackKingMoved = false;
-        this.hasLeftBlackRookMoved = false;
-        this.hasRightBlackRookMoved = false;
 
         this.blackEnpassantCol = undefined;
         this.whiteEnpassantCol = undefined;
@@ -235,7 +234,7 @@ class Board {
         if (pieceColour === colour.white) {
             return this.#isCellDoubleChecked(this.whiteKingPos, colour.white);
         } else {
-            return this.isCellDoubleChecked(this.blackKingPos, colour.black);
+            return this.#isCellDoubleChecked(this.blackKingPos, colour.black);
         }
     }
 
@@ -281,59 +280,45 @@ class Board {
         return this.rows[pos.r][pos.c][enemyPiecesProp] > 1;
     }
 
-    #canKingRightCastle(friendlyColour) {
-        if (friendlyColour === colour.white) {
-            if (this.hasWhiteKingMoved || this.hasRightWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(this.getHeight() - 1, this.getWidth() - 1));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
+    #canKingCastleKingSide(playerColour) {
+        const canCastleKingSide = playerColour === colour.white ? this.canWhiteCastleKingSide : this.canBlackCastleKingSide;
+        if (!canCastleKingSide || this.isKingChecked(playerColour)) return false;
 
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(this.getHeight() - 1, this.getWidth() - 1),
-                friendlyColour)
-        } else {
-            if (this.hasBlackKingMoved || this.hasRightBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(0, this.getWidth() - 1));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
-
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(0, this.getWidth() - 1),
-                friendlyColour)
-        }
+        const kingPos = this.getKingPos(playerColour);
+        return !this.isCellChecked(kingPos.addC(1), playerColour) &&
+            !this.isCellChecked(kingPos.addC(2), playerColour) &&
+            this.isCellEmpty(kingPos.addC(1)) &&
+            this.isCellEmpty(kingPos.addC(2))
     }
 
-    #canKingLeftCastle(friendlyColour) {
-        if (friendlyColour === colour.white) {
-            if (this.hasWhiteKingMoved || this.hasLeftWhiteRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(this.getHeight() - 1, 0));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.white) return false;
+    #canKingCastleQueenSide(playerColour) {
+        const canCastleQueenSide = playerColour === colour.white ? this.canWhiteCastleQueenSide : this.canBlackCastleQueenSide;
+        if (!canCastleQueenSide || this.isKingChecked(playerColour)) return false;
 
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(this.getHeight() - 1, 0),
-                friendlyColour)
-        } else {
-            if (this.hasBlackKingMoved || this.hasLeftBlackRookMoved || this.isKingChecked(friendlyColour)) return false;
-            const cornerCell = this.getCell(createPos(0, 0));
-            if (cornerCell.piece !== piece.rook || cornerCell.colour !== colour.black) return false;
-
-            return isPathBetweenUnchecked(this,
-                this.getKingPos(friendlyColour),
-                createPos(0, 0),
-                friendlyColour)
-        }
+        const kingPos = this.getKingPos(playerColour);
+        return !this.isCellChecked(kingPos.addC(-1), playerColour) &&
+            !this.isCellChecked(kingPos.addC(-2), playerColour) &&
+            this.isCellEmpty(kingPos.addC(-1)) &&
+            this.isCellEmpty(kingPos.addC(-2)) &&
+            this.isCellEmpty(kingPos.addC(-3))
     }
 
     #removePieceAtCell(pos) {
-        if (pos.equals(createPos(0, 4))) this.hasBlackKingMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, 4))) this.hasWhiteKingMoved = true;
+        if (pos.equals(createPos(0, 4))) {
+            this.canBlackCastleQueenSide = false;
+            this.canBlackCastleKingSide = false;
+        }
 
-        if (pos.equals(createPos(0, 0))) this.hasLeftBlackRookMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, 0))) this.hasLeftWhiteRookMoved = true;
+        if (pos.equals(createPos(this.getHeight() - 1, 4))) {
+            this.canWhiteCastleQueenSide = false;
+            this.canWhiteCastleKingSide = false;
+        }
 
-        if (pos.equals(createPos(0, this.getWidth() - 1))) this.hasRightBlackRookMoved = true;
-        if (pos.equals(createPos(this.getHeight() - 1, this.getWidth() - 1))) this.hasRightWhiteRookMoved = true;
+        if (pos.equals(createPos(0, 0))) this.canBlackCastleQueenSide = false;
+        if (pos.equals(createPos(this.getHeight() - 1, 0))) this.canWhiteCastleQueenSide = false;
+
+        if (pos.equals(createPos(0, this.getWidth() - 1))) this.canBlackCastleKingSide = false;
+        if (pos.equals(createPos(this.getHeight() - 1, this.getWidth() - 1))) this.canWhiteCastleKingSide = false;
 
         this.rows[pos.r][pos.c].piece = piece.none;
         this.rows[pos.r][pos.c].colour = undefined;
@@ -468,11 +453,11 @@ class Board {
     }
 
     #markPossibleCastlingMoves(kingColour) {
-        if (this.#canKingLeftCastle(kingColour)) {
+        if (this.#canKingCastleQueenSide(kingColour)) {
             this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(-2, 0)));
         }
 
-        if (this.#canKingRightCastle(kingColour)) {
+        if (this.#canKingCastleKingSide(kingColour)) {
             this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(2, 0)));
         }
     }
@@ -480,7 +465,7 @@ class Board {
     #findKingPositions() {
         for (let r = 0; r < this.getHeight(); r++) {
             for (let c = 0; c < this.getWidth(); c++) {
-                const cell = this.getCell(createPos(r,c));
+                const cell = this.getCell(createPos(r, c));
                 if (cell.piece === piece.king && cell.colour === colour.white) this.whiteKingPos = createPos(r, c);
                 if (cell.piece === piece.king && cell.colour === colour.black) this.blackKingPos = createPos(r, c);
             }

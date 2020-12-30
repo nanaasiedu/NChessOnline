@@ -16,7 +16,7 @@ function getFENForBoard(rows, turnColour, canWhiteCastleKingSide, canWhiteCastle
 
     fenRep += convertBoardToFen(rows);
     fenRep += ` ${convertColourToFen(turnColour)}`
-    fenRep += ` ${canWhiteCastleKingSide ? "K" : ""}${canWhiteCastleQueenSide ? "Q" : ""}${canBlackCastleKingSide ? "k" : ""}${canBlackCastleQueenSide ? "q" : ""}`
+    fenRep += ` ${convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide)}`
 
     return fenRep;
 }
@@ -35,6 +35,11 @@ function convertBoardToFen(rows) {
 
 function convertColourToFen(turnColour) {
     return turnColour === colour.white ? "w" : "b";
+}
+
+function convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide) {
+    const rep = `${canWhiteCastleKingSide ? "K" : ""}${canWhiteCastleQueenSide ? "Q" : ""}${canBlackCastleKingSide ? "k" : ""}${canBlackCastleQueenSide ? "q" : ""}`;
+    return rep === "" ? "-" : rep;
 }
 
 function convertCellToFen(cell) {

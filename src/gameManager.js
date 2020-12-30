@@ -20,7 +20,6 @@ class GameManager {
             this._normalStateMove(pos);
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
             this._pendingStateMove(pos);
-            drawBoard(this.board);
         }
     }
 
@@ -78,6 +77,7 @@ class GameManager {
         this.currentSelectedPos = undefined;
         this.board.clearPossibleMoves();
         this.currentGameState = gameState.NORMAL;
+        drawBoard(this.board);
     }
 }
 

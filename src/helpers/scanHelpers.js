@@ -210,27 +210,6 @@ function isCellBlockableInDirection(board, attackingPos, defendingPos, defending
     return false;
 }
 
-function isPathBetweenUnchecked(board, startPos, endPos, friendlyColour) {
-    const directionVec = Vector.makeDirectionVec(startPos, endPos);
-    const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
-    const {r, c} = { r: startPos.r, c: startPos.c};
-
-    let i = 1;
-    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
-        const curPos = createPos(r + i * vy, c + i * vx);
-
-        if (curPos.equals(endPos)) return true;
-
-        if (board.pieceAtCell(curPos) !== piece.none || board.isCellChecked(curPos, friendlyColour)) {
-            return false;
-        }
-
-        i++;
-    }
-
-    return true;
-}
-
 function isPathBetweenEmpty(board, startPos, endPos) {
     const directionVec = Vector.makeDirectionVec(startPos, endPos);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
@@ -277,4 +256,4 @@ function canPinnedPieceMove(board, pos) {
 
 }
 
-export { dangerScanBoard, markPossibleMoves, isCellBlockableInDirection, isPathBetweenUnchecked, canPinnedPieceMove }
+export { dangerScanBoard, markPossibleMoves, isCellBlockableInDirection, canPinnedPieceMove }
