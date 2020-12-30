@@ -17,7 +17,7 @@ export class Position {
     }
 
     equals(pos) {
-        return this.r === pos.r && this.c === pos.c;
+        return pos !== undefined && this.r === pos.r && this.c === pos.c;
     }
 }
 

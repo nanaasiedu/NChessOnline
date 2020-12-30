@@ -213,7 +213,37 @@ describe("Board", function () {
         })
     })
 
-    // TODO: Enpassant
+    // TODO: PROMOTION
+
+    describe("enpassant moves", function () {
+        it("should allow enpassant when pawn moves two spaces", function () {
+            board = new Board("3k4/4p3/8/3P4/1p6/8/2P5/4K3 b - -");
+            board.movePiece("e7", "e5"); // White enpassant
+            expect(getFenEnpassantRep(board)).toEqual("e6");
+            movePieceAndAssertBoard(board, "d5", "e6", "3k4/8/4P3/8/1p6/8/2P5/4K3");
+            expect(getFenEnpassantRep(board)).toEqual("-");
+
+            board.movePiece("d8", "e8");
+
+            board.movePiece("c2", "c4"); // Black enpassant
+            expect(getFenEnpassantRep(board)).toEqual("c3");
+            movePieceAndAssertBoard(board, "b4", "c3", "4k3/8/4P3/8/8/2p5/8/4K3");
+            expect(getFenEnpassantRep(board)).toEqual("-");
+        });
+
+        it("should disallow enpassant if player doesnt use it", function () {
+            board = new Board("3k4/4p3/8/3P4/2p3pP/8/1P6/4K3 b - -");
+            expect(function () { board.movePiece("g4", "h3") }).toThrow(new Error("Illegal Move"));
+
+            board.movePiece("e7", "e5"); // Black offers enpassant
+            board.movePiece("b2", "b4")  // White ignores offer and offers another enpassant
+            board.movePiece("d8", "e8"); // Black Ignores offer
+
+            expect(function () { board.movePiece("d5", "e6") }).toThrow(new Error("Illegal Move"));
+            board.movePiece("d5", "d6");
+            expect(function () { board.movePiece("c4", "b3") }).toThrow(new Error("Illegal Move"));
+        })
+    })
 
     describe("castling moves", function () {
         it("should allow castling moves when the castling path is clear and unchecked", function () {

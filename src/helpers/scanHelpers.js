@@ -173,7 +173,7 @@ function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
     if (cellPiece === piece.pawn &&
         board.isCellEmpty(curPos) &&
         directionVec !== undefined &&
-        !board.canEnpassant(pieceColour, curPos)) return;
+        !board.canEnpassant(curPos)) return;
     if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
 
     if (board.isCellEmpty(curPos)) {

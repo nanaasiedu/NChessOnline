@@ -22,9 +22,6 @@ class Board {
         this.rows = Array(BOARD_HEIGHT);
         this._isAnyCellMovable = false;
 
-        this.blackEnpassantCol = undefined;
-        this.whiteEnpassantCol = undefined;
-
         this.rows = loadFENBoard(fenRep);
         this.isWhiteTurn = loadFENIsWhiteTurn(fenRep);
         this.canWhiteCastleQueenSide = loadFENCastlingQueenSide(fenRep, colour.white, this.rows);
@@ -49,23 +46,24 @@ class Board {
 
         if (!this.#isMoveValid(movingCell, movingPos, destPos)) throw new Error("Illegal Move");
 
+
         const dyingCell = this.getCell(destPos);
+        this.#setPossibleEnpassantPosition(movingPos, destPos);
+        this.#removeEnpassantPawnIfAttacked(movingPos, destPos);
         this.#setCell(movingCell, destPos)
         this.#removePieceAtCell(movingPos);
-
-        this.#checkForEnpassant(movingPos, destPos);
 
         this.#movePossibleRookCastleMove(destPos, movingPos)
 
         if (this.#isCellPromotable(movingCell, destPos)) {
             this.#promoteCell(destPos);
-        }
+        } // TODO: FIX THIS BUG USING TESTS
 
         dangerScanBoard(this);
 
         const curColour = movingCell.colour;
         if (this.isKingChecked(curColour)) {
-            this.#reversePreviousMove(dyingCell, movingPos, destPos);
+            this.#reversePreviousMove(dyingCell, movingPos, destPos); // TODO: FIX THIS BUG USING TESTS // MAKE SURE TO REMREMBER PRMOTION AND ENPASSANT
             throw new Error("Illegal Move")
         }
 
@@ -89,12 +87,8 @@ class Board {
     }
 
     // TODO: test
-    canEnpassant(pieceColour, pos) {
-        if (pieceColour === colour.white) {
-            return pos.r === 2 && this.blackEnpassantCol === (pos.c);
-        } else {
-            return pos.r === this.getHeight() - 3 && this.whiteEnpassantCol === (pos.c);
-        }
+    canEnpassant(pos) {
+        return pos.equals(this.enpassantPosition);
     }
 
     // CELL METHODS ========= // TODO: test
@@ -333,12 +327,6 @@ class Board {
 
         if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
         if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
-
-        if (cell.colour === colour.white && cell.piece === piece.pawn &&
-            this.pieceAtCell(createPos(this.getHeight() - 2, pos.c)) === piece.pawn) this.whiteEnpassantCol = pos.c;
-
-        if (cell.colour === colour.black && cell.piece === piece.pawn &&
-            this.pieceAtCell(createPos(1, pos.c)) === piece.pawn) this.blackEnpassantCol = pos.c;
     }
 
     #isMoveValid(movingCell, movingPos, destPos) {
@@ -358,12 +346,8 @@ class Board {
         dangerScanBoard(this);
     }
 
-    #clearEnpassant(pieceColour) {
-        if (pieceColour === colour.white) {
-            this.whiteEnpassantCol = undefined;
-        } else {
-            this.blackEnpassantCol = undefined;
-        }
+    #clearEnpassant() {
+        this.enpassantPosition = undefined;
     }
 
     #isCellMovable(pos) {
@@ -386,7 +370,7 @@ class Board {
         );
     }
 
-    #checkForEnpassant(movingPos, destPos) {
+    #removeEnpassantPawnIfAttacked(movingPos, destPos) {
         const movingCell = this.getCell(movingPos);
         const dyingCell = this.getCell(destPos);
 
@@ -396,8 +380,19 @@ class Board {
             if (dyingCell.piece === piece.none && isPawnAttacking) {
                 const dyingPawnPos = destPos.addR(-pawnDirection.y);
                 this.#removePieceAtCell(dyingPawnPos);
-            } else {
             }
+        }
+    }
+
+    #setPossibleEnpassantPosition(movingPos, destPos) {
+        this.#clearEnpassant();
+
+        const movingCell = this.getCell(movingPos);
+        const numberOfSpacesMoved = Math.abs(destPos.r - movingPos.r);
+
+        if (movingCell.piece === piece.pawn && numberOfSpacesMoved === 2) {
+            const movingDirection = Vector.makeDirectionVec(movingPos, destPos);
+            this.enpassantPosition = movingPos.add(movingDirection);
         }
     }
 
