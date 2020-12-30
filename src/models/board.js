@@ -8,20 +8,19 @@ import {
     getFENForBoard,
     locationNotationToPosition,
     loadFENCastlingKingSide,
-    loadFENCastlingQueenSide
+    loadFENCastlingQueenSide,
+    loadFENEnpassantPosition
 } from "../notation/fenHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
-const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
+const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
 class Board {
     constructor(fenRep = DEFAULT_STARTING_POSITIONS_FEN) {
         this.rows = Array(BOARD_HEIGHT);
         this._isAnyCellMovable = false;
-        this.whiteKingPos = undefined;
-        this.blackKingPos = undefined;
 
         this.blackEnpassantCol = undefined;
         this.whiteEnpassantCol = undefined;
@@ -32,7 +31,10 @@ class Board {
         this.canBlackCastleQueenSide = loadFENCastlingQueenSide(fenRep, colour.black, this.rows);
         this.canWhiteCastleKingSide = loadFENCastlingKingSide(fenRep, colour.white, this.rows);
         this.canBlackCastleKingSide = loadFENCastlingKingSide(fenRep, colour.black, this.rows);
+        this.enpassantPosition = loadFENEnpassantPosition(fenRep)
 
+        this.whiteKingPos = undefined;
+        this.blackKingPos = undefined;
         this.#findKingPositions();
 
         dangerScanBoard(this);
@@ -81,7 +83,8 @@ class Board {
             this.canWhiteCastleKingSide,
             this.canWhiteCastleQueenSide,
             this.canBlackCastleKingSide,
-            this.canBlackCastleQueenSide
+            this.canBlackCastleQueenSide,
+            this.enpassantPosition
         );
     }
 

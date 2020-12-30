@@ -7,28 +7,27 @@ describe("Board", function () {
     describe("board creation", function () {
         it("should default to starting chess positions", function () {
             board = new Board();
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-            expect(getFenTurnRep(board)).toEqual("w");
-            expect(getFenCastlingRep(board)).toEqual("KQkq");
+            expect(board.getFEN()).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -");
         })
 
-        it("should be able to load FEN with turn defaults", function () {
+        it("should be able to load FEN board with defaults", function () {
             board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
-            expect(getFenTurnRep(board)).toEqual("w");
+            expect(board.getFEN()).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR w KQkq -");
         })
 
         it("should be able to load FEN with turn set", function () {
             board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b");
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
-            expect(getFenTurnRep(board)).toEqual("b");
+            expect(board.getFEN()).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b KQkq -");
         })
 
         it("should be able to load FEN with turn & castling positions set", function () {
             board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b Kq");
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR");
-            expect(getFenTurnRep(board)).toEqual("b");
-            expect(getFenCastlingRep(board)).toEqual("Kq");
+            expect(board.getFEN()).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b Kq -");
+        })
+
+        it("should be able to load full FEN", function () {
+            board = new Board("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b K e3");
+            expect(board.getFEN()).toEqual("rnbqkbnr/8/pppppppp/8/8/PPPPPPPP/8/RNBQKBNR b K e3");
         })
 
         it("should be able to load FEN with castling if the relevant pieces are in castling positions", function () {
@@ -286,7 +285,7 @@ function movePieceAndAssertBoard(board, startPos, destPos, expectedFEN) {
     expect(getFenBoardRep(board)).toEqual(expectedFEN);
 }
 
-const fenRegex = /(.+) ([wb]) ?(.+)?/
+const fenRegex = /(.+)\s([wb])\s?([K|Q|k|q]{1,4}|-)?\s?(.+)?/
 
 function getFenBoardRep(board) {
     return board.getFEN().match(fenRegex)[1];
@@ -298,4 +297,8 @@ function getFenTurnRep(board) {
 
 function getFenCastlingRep(board) {
     return board.getFEN().match(fenRegex)[3];
+}
+
+function getFenEnpassantRep(board) {
+    return board.getFEN().match(fenRegex)[4];
 }

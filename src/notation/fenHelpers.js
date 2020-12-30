@@ -1,9 +1,9 @@
 import {createPos} from "../models/position.js";
 import {piece, colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
-import {convertFileToIndex, convertRankToIndex} from "./chessNotationHelpers.js";
+import {convertFileToIndex, convertRankToIndex, convertChessPosToPos, convertPosToChessPos} from "./chessNotationHelpers.js";
 
-const fenRegex = /(.+) ([wb]) ?(.+)?/
+const fenRegex = /(.+)\s([wb])\s?([K|Q|k|q]{1,4}|-)?\s?(.+)?/
 
 function locationNotationToPosition(location) {
     let matches = location.match(/([a-h])([1-8])/)
@@ -11,13 +11,19 @@ function locationNotationToPosition(location) {
     return createPos(convertRankToIndex(matches[2]), convertFileToIndex(matches[1]));
 }
 
-function getFENForBoard(rows, turnColour, canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide) {
+function getFENForBoard(rows, turnColour,
+                        canWhiteCastleKingSide,
+                        canWhiteCastleQueenSide,
+                        canBlackCastleKingSide,
+                        canBlackCastleQueenSide,
+                        enpassantPosition
+) {
     let fenRep = "";
 
     fenRep += convertBoardToFen(rows);
     fenRep += ` ${convertColourToFen(turnColour)}`
     fenRep += ` ${convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide)}`
-
+    fenRep += ` ${convertEnpassantToFen(enpassantPosition)}`
     return fenRep;
 }
 
@@ -40,6 +46,10 @@ function convertColourToFen(turnColour) {
 function convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide) {
     const rep = `${canWhiteCastleKingSide ? "K" : ""}${canWhiteCastleQueenSide ? "Q" : ""}${canBlackCastleKingSide ? "k" : ""}${canBlackCastleQueenSide ? "q" : ""}`;
     return rep === "" ? "-" : rep;
+}
+
+function convertEnpassantToFen(enpassantPosition) {
+    return enpassantPosition === undefined ? '-' : convertPosToChessPos(enpassantPosition);
 }
 
 function convertCellToFen(cell) {
@@ -161,7 +171,17 @@ function loadFENCastlingKingSide(fen, playerColour, rows) {
 function loadFenCastling(fen, castlingRep, playerColour) {
     const repChar = playerColour === colour.white ? castlingRep.toUpperCase() : castlingRep;
     const match = fen.match(fenRegex);
+
     return match === null || match[3] === undefined || match[3].includes(repChar);
 }
 
-export { loadFENCastlingQueenSide, loadFENCastlingKingSide, loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }
+function loadFENEnpassantPosition(fen) {
+    const match = fen.match(fenRegex);
+    if (match === null || match[4] === undefined || match[4] === '-') {
+        return undefined;
+    }
+
+    return convertChessPosToPos(match[4]);
+}
+
+export { loadFENEnpassantPosition, loadFENCastlingQueenSide, loadFENCastlingKingSide, loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }
