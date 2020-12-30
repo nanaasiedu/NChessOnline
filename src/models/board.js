@@ -11,6 +11,7 @@ import {
     loadFENCastlingQueenSide,
     loadFENEnpassantPosition
 } from "../notation/fenHelpers.js";
+import {Cell} from "./cell.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
@@ -42,10 +43,10 @@ class Board {
     }
 
     moveCell(movingPos, destPos) {
+        const previousEnpassantPosition = this.enpassantPosition;
         const movingCell = this.getCell(movingPos);
 
         if (!this.#isMoveValid(movingCell, movingPos, destPos)) throw new Error("Illegal Move");
-
 
         const dyingCell = this.getCell(destPos);
         this.#setPossibleEnpassantPosition(movingPos, destPos);
@@ -55,15 +56,16 @@ class Board {
 
         this.#movePossibleRookCastleMove(destPos, movingPos)
 
-        if (this.#isCellPromotable(movingCell, destPos)) {
+        const canPiecePromote = this.#isCellPromotable(movingCell, destPos);
+        if (canPiecePromote) {
             this.#promoteCell(destPos);
-        } // TODO: FIX THIS BUG USING TESTS
+        }
 
         dangerScanBoard(this);
 
         const curColour = movingCell.colour;
         if (this.isKingChecked(curColour)) {
-            this.#reversePreviousMove(dyingCell, movingPos, destPos); // TODO: FIX THIS BUG USING TESTS // MAKE SURE TO REMREMBER PRMOTION AND ENPASSANT
+            this.#reversePreviousMove(dyingCell, movingPos, destPos, previousEnpassantPosition, canPiecePromote);
             throw new Error("Illegal Move")
         }
 
@@ -339,9 +341,23 @@ class Board {
         return canMoveToCell;
     }
 
-    #reversePreviousMove(dyingCell, movingPos, destPos) {
+    #reversePreviousMove(dyingCell, movingPos, destPos, previousEnpassantPosition, didPiecePromote) {
+        this.enpassantPosition = previousEnpassantPosition;
+        const didEnpassantHappen = destPos.equals(previousEnpassantPosition);
+
+        if(didEnpassantHappen) {
+            const movementDirection = Vector.makeDirectionVec(movingPos, destPos);
+            const enemyPawn = new Cell(this.isWhiteTurn ? colour.black : colour.white, piece.pawn);
+            this.#setCell(enemyPawn, destPos.addR(-movementDirection.y));
+        }
+
         this.#setCell(this.getCell(destPos), movingPos)
         this.#setCell(dyingCell, destPos)
+
+        if (didPiecePromote) {
+            const playerPawn = new Cell(this.isWhiteTurn ? colour.white : colour.black, piece.pawn);
+            this.#setCell(playerPawn, movingPos);
+        }
 
         dangerScanBoard(this);
     }

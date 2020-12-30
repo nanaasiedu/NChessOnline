@@ -175,17 +175,17 @@ describe("Board", function () {
         })
 
         it("should throw an error when there is no piece on the starting position", function () {
-            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b K e3");
             expect(function () { board.movePiece("a3", "a4") }).toThrow(new Error("Illegal Move"));
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            expect(board.getFEN()).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b K e3");
         })
 
         it("should throw an error when the selected piece can not move to the destination", function () {
-            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Q e6");
             expect(function () { board.movePiece("a2", "b2") }).toThrow(new Error("Illegal Move"));
             expect(function () { board.movePiece("b1", "c4") }).toThrow(new Error("Illegal Move"));
             expect(function () { board.movePiece("e1", "e6") }).toThrow(new Error("Illegal Move"));
-            expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+            expect(board.getFEN()).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w Q e6");
         })
 
         it("should throw an error if the move will leave king in check", function () {
@@ -203,7 +203,20 @@ describe("Board", function () {
             expect(function () { board.movePiece("d4", "d5") }).toThrow(new Error("Illegal Move"));
         })
 
-        it("should throw an error when moving a colour off turn", function () {
+        it("should not alter state of board when illegal move is thrown", function () {
+            board = new Board("4k3/1P6/q7/2Pp4/K7/8/8/8 w - d6");
+            // Normal move
+            expect(function () { board.movePiece("c5", "c6") }).toThrow(new Error("Illegal Move"));
+            expect(board.getFEN()).toEqual("4k3/1P6/q7/2Pp4/K7/8/8/8 w - d6");
+            // Pawn enpassant
+            expect(function () { board.movePiece("c5", "d6") }).toThrow(new Error("Illegal Move"));
+            expect(board.getFEN()).toEqual("4k3/1P6/q7/2Pp4/K7/8/8/8 w - d6");
+            // Pawn promotion
+            expect(function () { board.movePiece("b7", "b8") }).toThrow(new Error("Illegal Move"));
+            expect(board.getFEN()).toEqual("4k3/1P6/q7/2Pp4/K7/8/8/8 w - d6");
+        })
+
+        it("should throw an error when moving other players pieces", function () {
             board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
             expect(function () { board.movePiece("a7", "a6") }).toThrow(new Error("Illegal Move"));
             board.movePiece("a2", "a3");
@@ -213,7 +226,16 @@ describe("Board", function () {
         })
     })
 
-    // TODO: PROMOTION
+    describe("Promotion", function () {
+        it ("promotes pawns to queens when they reach the end of the board", function () {
+            board = new Board("8/1P4k1/8/8/8/8/1K4p1/8 w - -");
+            board.movePiece("b7","b8");
+            expect(board.getFEN()).toEqual("1Q6/6k1/8/8/8/8/1K4p1/8 b - -");
+            board.movePiece("g2","g1");
+            expect(board.getFEN()).toEqual("1Q6/6k1/8/8/8/8/1K6/6q1 w - -");
+
+        })
+    })
 
     describe("enpassant moves", function () {
         it("should allow enpassant when pawn moves two spaces", function () {
