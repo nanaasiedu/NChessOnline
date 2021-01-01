@@ -1,29 +1,22 @@
-import {createPos} from "../models/position.js";
 import {piece, colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
-import {convertFileToIndex, convertRankToIndex, convertChessPosToPos, convertPosToChessPos} from "./chessNotationHelpers.js";
+import {convertPositionToCoordinate, convertCoordinateToPosition} from "./chessNotationHelpers.js";
 
 const fenRegex = /(.+)\s([wb])\s?([K|Q|k|q]{1,4}|-)?\s?(.+)?/
-
-function locationNotationToPosition(location) {
-    let matches = location.match(/([a-h])([1-8])/)
-    if (matches === null || matches[0] !== location) throw new Error("Invalid location");
-    return createPos(convertRankToIndex(matches[2]), convertFileToIndex(matches[1]));
-}
 
 function getFENForBoard(rows, turnColour,
                         canWhiteCastleKingSide,
                         canWhiteCastleQueenSide,
                         canBlackCastleKingSide,
                         canBlackCastleQueenSide,
-                        enpassantPosition
+                        enpassantCoordinate
 ) {
     let fenRep = "";
 
     fenRep += convertBoardToFen(rows);
     fenRep += ` ${convertColourToFen(turnColour)}`
     fenRep += ` ${convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, canBlackCastleKingSide, canBlackCastleQueenSide)}`
-    fenRep += ` ${convertEnpassantToFen(enpassantPosition)}`
+    fenRep += ` ${convertEnpassantToFen(enpassantCoordinate)}`
     return fenRep;
 }
 
@@ -48,8 +41,8 @@ function convertCastlingToFen(canWhiteCastleKingSide, canWhiteCastleQueenSide, c
     return rep === "" ? "-" : rep;
 }
 
-function convertEnpassantToFen(enpassantPosition) {
-    return enpassantPosition === undefined ? '-' : convertPosToChessPos(enpassantPosition);
+function convertEnpassantToFen(enpassantCoordinate) {
+    return enpassantCoordinate === undefined ? '-' : convertCoordinateToPosition(enpassantCoordinate);
 }
 
 function convertCellToFen(cell) {
@@ -181,7 +174,7 @@ function loadFENEnpassantPosition(fen) {
         return undefined;
     }
 
-    return convertChessPosToPos(match[4]);
+    return convertPositionToCoordinate(match[4]);
 }
 
-export { loadFENEnpassantPosition, loadFENCastlingQueenSide, loadFENCastlingKingSide, loadFENIsWhiteTurn, loadFENBoard, locationNotationToPosition, getFENForBoard }
+export { loadFENEnpassantPosition, loadFENCastlingQueenSide, loadFENCastlingKingSide, loadFENIsWhiteTurn, loadFENBoard, getFENForBoard }

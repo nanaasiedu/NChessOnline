@@ -7,7 +7,7 @@ class GameManager {
         this.board = board;
 
         this.currentGameState = gameState.NORMAL;
-        this.currentSelectedPos = undefined;
+        this.currentSelectedCoor = undefined;
     }
 
     startGame() {
@@ -15,33 +15,33 @@ class GameManager {
         drawBoard(this.board);
     }
 
-    selectCell(pos) {
+    selectCell(coor) {
         if (this.currentGameState === gameState.NORMAL) {
-            this._normalStateMove(pos);
+            this._normalStateMove(coor);
         } else if (this.currentGameState === gameState.PENDING_MOVE) {
-            this._pendingStateMove(pos);
+            this._pendingStateMove(coor);
         }
     }
 
-    _normalStateMove(pos) {
-        if (this.board.colourAtCell(pos) !== this.board.getCurrentTurnColour()) {
+    _normalStateMove(coor) {
+        if (this.board.colourAtCell(coor) !== this.board.getCurrentTurnColour()) {
             alert("Illegal move!")
             return;
         }
 
-        highlightCell(pos);
-        this.currentSelectedPos = pos;
+        highlightCell(coor);
+        this.currentSelectedCoor = coor;
         this.currentGameState = gameState.PENDING_MOVE;
     }
 
-    _pendingStateMove(destPos) {
-        if (destPos.equals(this.currentSelectedPos)) {
+    _pendingStateMove(destCoor) {
+        if (destCoor.equals(this.currentSelectedCoor)) {
             this._switchToNormalMode();
             return;
         }
 
         try {
-            this.board.moveCell(this.currentSelectedPos, destPos)
+            this.board.moveCell(this.currentSelectedCoor, destCoor)
         } catch (err) {
             alert("Illegal move!")
             return;
@@ -49,7 +49,7 @@ class GameManager {
 
         this._switchToNormalMode();
 
-        if (isCheckMate(this.board, destPos)) {
+        if (isCheckMate(this.board, destCoor)) {
             this._endGameWithCheckMate();
             return;
         }
@@ -74,7 +74,7 @@ class GameManager {
     }
 
     _switchToNormalMode() {
-        this.currentSelectedPos = undefined;
+        this.currentSelectedCoor = undefined;
         this.board.clearPossibleMoves();
         this.currentGameState = gameState.NORMAL;
         drawBoard(this.board);

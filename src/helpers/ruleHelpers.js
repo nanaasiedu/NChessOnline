@@ -1,4 +1,4 @@
-import {createPos} from "../models/position.js";
+import {createCoordinate} from "../models/coordinate.js";
 import {piece} from "../models/piece.js";
 import {canPinnedPieceMove, markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
 
@@ -7,7 +7,7 @@ function canColourMove(board) {
 
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
-            const curPos = createPos(r, c);
+            const curPos = createCoordinate(r, c);
             const curCell = board.getCell(curPos);
             if (curCell.piece === piece.none || curCell.colour !== turnColour) continue;
 
@@ -36,7 +36,7 @@ export function isCheckMate(board, checkingPiecePos) {
     if (board.isKingDoubleChecked(turnColour)) return true;
     if (isCellBlockableInDirection(board,
         checkingPiecePos,
-        board.getKingPos(turnColour),
+        board.getKingCoor(turnColour),
         turnColour)) return false;
     return !board.canCellBeTakenByColour(checkingPiecePos, turnColour);
 }

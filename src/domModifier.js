@@ -1,8 +1,8 @@
 import { piece } from "./models/piece.js";
-import {createPos} from "./models/position.js";
-import {convertPosToChessPos} from "./notation/chessNotationHelpers.js";
+import {createCoordinate} from "./models/coordinate.js";
+import {convertCoordinateToPosition} from "./notation/chessNotationHelpers.js";
 
-const cellId = (r, c) => `cell-${convertPosToChessPos(createPos(r, c))}`
+const cellId = (r, c) => `cell-${convertCoordinateToPosition(createCoordinate(r, c))}`
 
 function setupDomBoard(board, gameManager) {
     const boardElement = document.getElementById('board');
@@ -26,7 +26,7 @@ function setupDomBoard(board, gameManager) {
 function drawBoard(board) {
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
-            addPieceToCell(createPos(r,c), board);
+            addPieceToCell(createCoordinate(r,c), board);
         }
     }
 }
@@ -55,7 +55,7 @@ function addPieceToCell(pos, board) {
 }
 
 function selectCell(event, gameManager, r, c) {
-    gameManager.selectCell(createPos(r,c))
+    gameManager.selectCell(createCoordinate(r,c))
 }
 
 function highlightCell (pos) {

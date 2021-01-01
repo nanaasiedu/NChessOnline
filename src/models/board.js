@@ -1,25 +1,25 @@
 import {colour, piece, swapColour} from "./piece.js";
-import {createPos} from "./position.js";
+import {createCoordinate} from "./coordinate.js";
 import {Vector, createVec} from "./vector.js";
 import {dangerScanBoard, markPossibleMoves} from "../helpers/scanHelpers.js";
 import {
     loadFENIsWhiteTurn,
     loadFENBoard,
     getFENForBoard,
-    locationNotationToPosition,
     loadFENCastlingKingSide,
     loadFENCastlingQueenSide,
     loadFENEnpassantPosition
 } from "../notation/fenHelpers.js";
 import {Cell} from "./cell.js";
+import {convertPositionToCoordinate} from "../notation/chessNotationHelpers.js";
 
 const BOARD_WIDTH = 8;
 const BOARD_HEIGHT = 8;
 
-const DEFAULT_STARTING_POSITIONS_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
+const DEFAULT_STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
 
 class Board {
-    constructor(fenRep = DEFAULT_STARTING_POSITIONS_FEN) {
+    constructor(fenRep = DEFAULT_STARTING_FEN) {
         this.rows = Array(BOARD_HEIGHT);
         this._isAnyCellMovable = false;
 
@@ -29,11 +29,11 @@ class Board {
         this.canBlackCastleQueenSide = loadFENCastlingQueenSide(fenRep, colour.black, this.rows);
         this.canWhiteCastleKingSide = loadFENCastlingKingSide(fenRep, colour.white, this.rows);
         this.canBlackCastleKingSide = loadFENCastlingKingSide(fenRep, colour.black, this.rows);
-        this.enpassantPosition = loadFENEnpassantPosition(fenRep)
+        this.enpassantCoordinate = loadFENEnpassantPosition(fenRep)
 
-        this.whiteKingPos = undefined;
-        this.blackKingPos = undefined;
-        this.#findKingPositions();
+        this.whiteKingCoor = undefined;
+        this.blackKingCoor = undefined;
+        this.#findKingCoordinates();
 
         dangerScanBoard(this);
     }
@@ -42,40 +42,40 @@ class Board {
         return this.isWhiteTurn ? colour.white : colour.black;
     }
 
-    moveCell(movingPos, destPos) {
-        const previousEnpassantPosition = this.enpassantPosition;
-        const movingCell = this.getCell(movingPos);
+    moveCell(movingCoor, destCoor) {
+        const previousEnpassantCoordinate = this.enpassantCoordinate;
+        const movingCell = this.getCell(movingCoor);
 
-        if (!this.#isMoveValid(movingCell, movingPos, destPos)) throw new Error("Illegal Move");
+        if (!this.#isMoveValid(movingCell, movingCoor, destCoor)) throw new Error("Illegal Move");
 
-        const dyingCell = this.getCell(destPos);
-        this.#setPossibleEnpassantPosition(movingPos, destPos);
-        this.#removeEnpassantPawnIfAttacked(movingPos, destPos);
-        this.#setCell(movingCell, destPos)
-        this.#removePieceAtCell(movingPos);
+        const dyingCell = this.getCell(destCoor);
+        this.#setPossibleEnpassantCoordinate(movingCoor, destCoor);
+        this.#removeEnpassantPawnIfAttacked(movingCoor, destCoor);
+        this.#setCell(movingCell, destCoor)
+        this.#removePieceAtCell(movingCoor);
 
-        this.#movePossibleRookCastleMove(destPos, movingPos)
+        this.#movePossibleRookCastleMove(destCoor, movingCoor)
 
-        const canPiecePromote = this.#isCellPromotable(movingCell, destPos);
+        const canPiecePromote = this.#isCellPromotable(movingCell, destCoor);
         if (canPiecePromote) {
-            this.#promoteCell(destPos);
+            this.#promoteCell(destCoor);
         }
 
         dangerScanBoard(this);
 
         const curColour = movingCell.colour;
         if (this.isKingChecked(curColour)) {
-            this.#reversePreviousMove(dyingCell, movingPos, destPos, previousEnpassantPosition, canPiecePromote);
+            this.#reversePreviousMove(dyingCell, movingCoor, destCoor, previousEnpassantCoordinate, canPiecePromote);
             throw new Error("Illegal Move")
         }
 
         this.isWhiteTurn = !this.isWhiteTurn;
     }
 
-    movePiece(startChessPos, endChessPos) {
-        const startPos = locationNotationToPosition(startChessPos);
-        const endPos = locationNotationToPosition(endChessPos);
-        this.moveCell(startPos, endPos);
+    movePiece(startPos, endPos) {
+        const startCoor = convertPositionToCoordinate(startPos);
+        const endCoor = convertPositionToCoordinate(endPos);
+        this.moveCell(startCoor, endCoor);
     }
 
     getFEN() {
@@ -84,45 +84,45 @@ class Board {
             this.canWhiteCastleQueenSide,
             this.canBlackCastleKingSide,
             this.canBlackCastleQueenSide,
-            this.enpassantPosition
+            this.enpassantCoordinate
         );
     }
 
     // TODO: test
-    canEnpassant(pos) {
-        return pos.equals(this.enpassantPosition);
+    canEnpassant(coor) {
+        return coor.equals(this.enpassantCoordinate);
     }
 
     // CELL METHODS ========= // TODO: test
 
-    getKingPos(pieceColour) {
+    getKingCoor(pieceColour) {
         if (pieceColour === colour.white) {
-            return this.whiteKingPos;
+            return this.whiteKingCoor;
         } else {
-            return this.blackKingPos;
+            return this.blackKingCoor;
         }
     }
 
-    isCellEmpty(pos) {
-        return this.getCell(pos).piece === piece.none;
+    isCellEmpty(coor) {
+        return this.getCell(coor).piece === piece.none;
     }
 
-    getCell(pos) {
-        if (!this.legalPosition(pos)) return undefined;
+    getCell(coor) {
+        if (!this.legalCoordinate(coor)) return undefined;
 
-        const cell = this.rows[pos.r][pos.c];
+        const cell = this.rows[coor.r][coor.c];
         return {
             piece: cell.piece,
             colour: cell.colour
         };
     }
 
-    pieceAtCell(pos) {
-        return this.getCell(pos).piece;
+    pieceAtCell(coor) {
+        return this.getCell(coor).piece;
     }
 
-    colourAtCell(pos) {
-        return this.getCell(pos).colour || undefined;
+    colourAtCell(coor) {
+        return this.getCell(coor).colour || undefined;
     }
 
     // POSSIBLE MOVES ======= // TODO: test
@@ -137,9 +137,9 @@ class Board {
         this._isAnyCellMovable = false;
     }
 
-    setMovePossibleOnCell(pos) {
+    setMovePossibleOnCell(coor) {
         this._isAnyCellMovable = true;
-        this.rows[pos.r][pos.c].movePossible = true;
+        this.rows[coor.r][coor.c].movePossible = true;
     }
 
     isAnyCellMovable() {
@@ -148,19 +148,19 @@ class Board {
 
     // CHECKING & PINNING ======= // TODO: test
 
-    isCellChecked(pos, friendlyColour) {
-        if (!this.legalPosition(pos)) return false;
+    isCellChecked(coor, friendlyColour) {
+        if (!this.legalCoordinate(coor)) return false;
         const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
-        return this.rows[pos.r][pos.c][enemyPiecesProp] > 0;
+        return this.rows[coor.r][coor.c][enemyPiecesProp] > 0;
     }
 
-    checkCell(attackingColour, posToCheck) {
-        if (!this.legalPosition(posToCheck)) {
+    checkCell(checkingColour, coorToCheck) {
+        if (!this.legalCoordinate(coorToCheck)) {
             return;
         }
-        const checkingPiecesProp = attackingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
+        const checkingPiecesProp = checkingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
 
-        this.rows[posToCheck.r][posToCheck.c][checkingPiecesProp] += 1;
+        this.rows[coorToCheck.r][coorToCheck.c][checkingPiecesProp] += 1;
     }
 
     clearCellsCheckProperties() {
@@ -177,44 +177,44 @@ class Board {
         }
     }
 
-    isCellPinned(pos) {
-        return this.rows[pos.r][pos.c].pinnedToking;
+    isCellPinned(coor) {
+        return this.rows[coor.r][coor.c].pinnedToking;
     }
 
-    setPieceAsCheckedByKing(attackingColour, posToCheck) {
-        if (!this.legalPosition(posToCheck)) return undefined;
+    setPieceAsCheckedByKing(checkingColour, coorToCheck) {
+        if (!this.legalCoordinate(coorToCheck)) return undefined;
 
-        const checkedByKingProp = attackingColour === colour.white ? "checkedByWhiteKing" : "checkedByBlackKing";
-        this.rows[posToCheck.r][posToCheck.c][checkedByKingProp] = true;
+        const checkedByKingProp = checkingColour === colour.white ? "checkedByWhiteKing" : "checkedByBlackKing";
+        this.rows[coorToCheck.r][coorToCheck.c][checkedByKingProp] = true;
     }
 
-    setPieceAsCheckedByPawn(attackingColour, posToCheck) {
-        if (!this.legalPosition(posToCheck)) return undefined;
+    setPieceAsCheckedByPawn(attackingColour, coorToCheck) {
+        if (!this.legalCoordinate(coorToCheck)) return undefined;
 
         const checkedByPawnProp = attackingColour === colour.white ? "checkedByWhitePawn" : "checkedByBlackPawn";
-        this.rows[posToCheck.r][posToCheck.c][checkedByPawnProp] = true;
+        this.rows[coorToCheck.r][coorToCheck.c][checkedByPawnProp] = true;
     }
 
-    setCellAsPinned(pos) {
-        this.rows[pos.r][pos.c].pinnedToking = true;
+    setCellAsPinned(coor) {
+        this.rows[coor.r][coor.c].pinnedToking = true;
     }
 
-    canCellBeTakenByColour(pos, attackingColour) {
+    canCellBeTakenByColour(coor, attackingColour) {
         const attackingPiecesProp = attackingColour === colour.white ? "numberOfWhiteChecks" : "numberOfBlackChecks";
         const checkedByAttackingKingProp = attackingColour === colour.white ? "checkedByWhiteKing" : "checkedByBlackKing";
         const checkedByAttackingPawnProp = attackingColour === colour.white ? "checkedByWhitePawn" : "checkedByBlackPawn";
 
-        const canCellBeTakenBysSeveralPieces = this.rows[pos.r][pos.c][attackingPiecesProp] > 2;
+        const canCellBeTakenBysSeveralPieces = this.rows[coor.r][coor.c][attackingPiecesProp] > 2;
 
-        const canSecondAttackerTakeCell = this.rows[pos.r][pos.c][attackingPiecesProp] === 2
-            && !(this.rows[pos.r][pos.c][checkedByAttackingPawnProp]
-                && this.pieceAtCell(pos) === piece.none)
+        const canSecondAttackerTakeCell = this.rows[coor.r][coor.c][attackingPiecesProp] === 2
+            && !(this.rows[coor.r][coor.c][checkedByAttackingPawnProp]
+                && this.pieceAtCell(coor) === piece.none)
 
-        const isCellCheckedOnlyByAttackingKing = this.rows[pos.r][pos.c][checkedByAttackingKingProp];
-        const isCellProtectedFromAttackingKing = this.isCellChecked(pos, attackingColour);
+        const isCellCheckedOnlyByAttackingKing = this.rows[coor.r][coor.c][checkedByAttackingKingProp];
+        const isCellProtectedFromAttackingKing = this.isCellChecked(coor, attackingColour);
         const canAttackingKingTakeCell = isCellCheckedOnlyByAttackingKing && !isCellProtectedFromAttackingKing;
 
-        const canOtherPieceTakeCell = !isCellCheckedOnlyByAttackingKing && this.isCellChecked(pos, swapColour(attackingColour))
+        const canOtherPieceTakeCell = !isCellCheckedOnlyByAttackingKing && this.isCellChecked(coor, swapColour(attackingColour))
 
         return canCellBeTakenBysSeveralPieces || canSecondAttackerTakeCell || canAttackingKingTakeCell || canOtherPieceTakeCell;
     }
@@ -223,35 +223,35 @@ class Board {
 
     isKingChecked(pieceColour) {
         if (pieceColour === colour.white) {
-            return this.isCellChecked(this.whiteKingPos, colour.white);
+            return this.isCellChecked(this.whiteKingCoor, colour.white);
         } else {
-            return this.isCellChecked(this.blackKingPos, colour.black);
+            return this.isCellChecked(this.blackKingCoor, colour.black);
         }
     }
 
     isKingDoubleChecked(pieceColour) {
         if (pieceColour === colour.white) {
-            return this.#isCellDoubleChecked(this.whiteKingPos, colour.white);
+            return this.#isCellDoubleChecked(this.whiteKingCoor, colour.white);
         } else {
-            return this.#isCellDoubleChecked(this.blackKingPos, colour.black);
+            return this.#isCellDoubleChecked(this.blackKingCoor, colour.black);
         }
     }
 
-    canKingMove(pieceColour, attackingPos) {
-        const kingPos = this.getKingPos(pieceColour);
-        const r = kingPos.r;
-        const c = kingPos.c
+    canKingMove(pieceColour, attackingCoor) {
+        const kingCoor = this.getKingCoor(pieceColour);
+        const r = kingCoor.r;
+        const c = kingCoor.c
 
-        return this.#canKingMoveToPos(createPos(r + 1, c - 1), pieceColour, attackingPos) ||
-            this.#canKingMoveToPos(createPos(r + 1, c), pieceColour, attackingPos) ||
-            this.#canKingMoveToPos(createPos(r + 1, c + 1), pieceColour, attackingPos) ||
+        return this.#canKingMoveToCoor(createCoordinate(r + 1, c - 1), pieceColour, attackingCoor) ||
+            this.#canKingMoveToCoor(createCoordinate(r + 1, c), pieceColour, attackingCoor) ||
+            this.#canKingMoveToCoor(createCoordinate(r + 1, c + 1), pieceColour, attackingCoor) ||
 
-            this.#canKingMoveToPos(createPos(r - 1, c - 1), pieceColour, attackingPos) ||
-            this.#canKingMoveToPos(createPos(r - 1, c), pieceColour, attackingPos) ||
-            this.#canKingMoveToPos(createPos(r - 1, c + 1), pieceColour, attackingPos) ||
+            this.#canKingMoveToCoor(createCoordinate(r - 1, c - 1), pieceColour, attackingCoor) ||
+            this.#canKingMoveToCoor(createCoordinate(r - 1, c), pieceColour, attackingCoor) ||
+            this.#canKingMoveToCoor(createCoordinate(r - 1, c + 1), pieceColour, attackingCoor) ||
 
-            this.#canKingMoveToPos(createPos(r, c - 1), pieceColour, attackingPos) ||
-            this.#canKingMoveToPos(createPos(r, c + 1), pieceColour, attackingPos)
+            this.#canKingMoveToCoor(createCoordinate(r, c - 1), pieceColour, attackingCoor) ||
+            this.#canKingMoveToCoor(createCoordinate(r, c + 1), pieceColour, attackingCoor)
     }
 
     hasInsufficientMaterial() {
@@ -268,220 +268,203 @@ class Board {
         return BOARD_HEIGHT;
     }
 
-    legalPosition(pos) {
-        return pos.r >= 0 && pos.r < this.getHeight() && pos.c >= 0 && pos.c < this.getWidth()
+    legalCoordinate(coor) {
+        return coor.r >= 0 && coor.r < this.getHeight() && coor.c >= 0 && coor.c < this.getWidth()
     }
 
     // ==========================
 
-    #isCellDoubleChecked(pos, friendlyColour) {
-        const enemyPiecesProp = friendlyColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
-        return this.rows[pos.r][pos.c][enemyPiecesProp] > 1;
+    #isCellDoubleChecked(coor, playerColour) {
+        const enemyPiecesProp = playerColour === colour.white ? "numberOfBlackChecks" : "numberOfWhiteChecks";
+        return this.rows[coor.r][coor.c][enemyPiecesProp] > 1;
     }
 
     #canKingCastleKingSide(playerColour) {
         const canCastleKingSide = playerColour === colour.white ? this.canWhiteCastleKingSide : this.canBlackCastleKingSide;
         if (!canCastleKingSide || this.isKingChecked(playerColour)) return false;
 
-        const kingPos = this.getKingPos(playerColour);
-        return !this.isCellChecked(kingPos.addC(1), playerColour) &&
-            !this.isCellChecked(kingPos.addC(2), playerColour) &&
-            this.isCellEmpty(kingPos.addC(1)) &&
-            this.isCellEmpty(kingPos.addC(2))
+        const kingCoor = this.getKingCoor(playerColour);
+        return !this.isCellChecked(kingCoor.addC(1), playerColour) &&
+            !this.isCellChecked(kingCoor.addC(2), playerColour) &&
+            this.isCellEmpty(kingCoor.addC(1)) &&
+            this.isCellEmpty(kingCoor.addC(2))
     }
 
     #canKingCastleQueenSide(playerColour) {
         const canCastleQueenSide = playerColour === colour.white ? this.canWhiteCastleQueenSide : this.canBlackCastleQueenSide;
         if (!canCastleQueenSide || this.isKingChecked(playerColour)) return false;
 
-        const kingPos = this.getKingPos(playerColour);
-        return !this.isCellChecked(kingPos.addC(-1), playerColour) &&
-            !this.isCellChecked(kingPos.addC(-2), playerColour) &&
-            this.isCellEmpty(kingPos.addC(-1)) &&
-            this.isCellEmpty(kingPos.addC(-2)) &&
-            this.isCellEmpty(kingPos.addC(-3))
+        const kingCoor = this.getKingCoor(playerColour);
+        return !this.isCellChecked(kingCoor.addC(-1), playerColour) &&
+            !this.isCellChecked(kingCoor.addC(-2), playerColour) &&
+            this.isCellEmpty(kingCoor.addC(-1)) &&
+            this.isCellEmpty(kingCoor.addC(-2)) &&
+            this.isCellEmpty(kingCoor.addC(-3))
     }
 
-    #removePieceAtCell(pos) {
-        if (pos.equals(createPos(0, 4))) {
+    #removePieceAtCell(coor) {
+        if (coor.equals(createCoordinate(0, 4))) {
             this.canBlackCastleQueenSide = false;
             this.canBlackCastleKingSide = false;
         }
 
-        if (pos.equals(createPos(this.getHeight() - 1, 4))) {
+        if (coor.equals(createCoordinate(this.getHeight() - 1, 4))) {
             this.canWhiteCastleQueenSide = false;
             this.canWhiteCastleKingSide = false;
         }
 
-        if (pos.equals(createPos(0, 0))) this.canBlackCastleQueenSide = false;
-        if (pos.equals(createPos(this.getHeight() - 1, 0))) this.canWhiteCastleQueenSide = false;
+        if (coor.equals(createCoordinate(0, 0))) this.canBlackCastleQueenSide = false;
+        if (coor.equals(createCoordinate(this.getHeight() - 1, 0))) this.canWhiteCastleQueenSide = false;
 
-        if (pos.equals(createPos(0, this.getWidth() - 1))) this.canBlackCastleKingSide = false;
-        if (pos.equals(createPos(this.getHeight() - 1, this.getWidth() - 1))) this.canWhiteCastleKingSide = false;
+        if (coor.equals(createCoordinate(0, this.getWidth() - 1))) this.canBlackCastleKingSide = false;
+        if (coor.equals(createCoordinate(this.getHeight() - 1, this.getWidth() - 1))) this.canWhiteCastleKingSide = false;
 
-        this.rows[pos.r][pos.c].piece = piece.none;
-        this.rows[pos.r][pos.c].colour = undefined;
+        this.rows[coor.r][coor.c].piece = piece.none;
+        this.rows[coor.r][coor.c].colour = undefined;
     }
 
-    #setCell(cell, pos) {
-        this.rows[pos.r][pos.c].piece = cell.piece;
-        this.rows[pos.r][pos.c].colour = cell.colour;
+    #setCell(cell, coor) {
+        this.rows[coor.r][coor.c].piece = cell.piece;
+        this.rows[coor.r][coor.c].colour = cell.colour;
 
-        if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingPos = pos;
-        if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingPos = pos;
+        if (cell.colour === colour.white && cell.piece === piece.king) this.whiteKingCoor = coor;
+        if (cell.colour === colour.black && cell.piece === piece.king) this.blackKingCoor = coor;
     }
 
-    #isMoveValid(movingCell, movingPos, destPos) {
+    #isMoveValid(movingCell, movingCoor, destCoor) {
         if (this.isWhiteTurn && movingCell.colour !== colour.white ||
             !this.isWhiteTurn && movingCell.colour !== colour.black) return false;
 
-        this.#markPossibleMovesForPos(movingPos);
-        const canMoveToCell = this.#isCellMovable(destPos);
+        this.#markPossibleMovesForCoor(movingCoor);
+        const canMoveToCell = this.#isCellMovable(destCoor);
         this.clearPossibleMoves();
         return canMoveToCell;
     }
 
-    #reversePreviousMove(dyingCell, movingPos, destPos, previousEnpassantPosition, didPiecePromote) {
-        this.enpassantPosition = previousEnpassantPosition;
-        const didEnpassantHappen = destPos.equals(previousEnpassantPosition);
+    #reversePreviousMove(dyingCell, movingCoor, destCoor, previousEnpassantCoordinate, didPiecePromote) {
+        this.enpassantCoordinate = previousEnpassantCoordinate;
+        const didEnpassantHappen = destCoor.equals(previousEnpassantCoordinate);
 
-        if(didEnpassantHappen) {
-            const movementDirection = Vector.makeDirectionVec(movingPos, destPos);
+        if (didEnpassantHappen) {
+            const movementDirection = Vector.makeDirectionVec(movingCoor, destCoor);
             const enemyPawn = new Cell(this.isWhiteTurn ? colour.black : colour.white, piece.pawn);
-            this.#setCell(enemyPawn, destPos.addR(-movementDirection.y));
+            this.#setCell(enemyPawn, destCoor.addR(-movementDirection.y));
         }
 
-        this.#setCell(this.getCell(destPos), movingPos)
-        this.#setCell(dyingCell, destPos)
+        this.#setCell(this.getCell(destCoor), movingCoor)
+        this.#setCell(dyingCell, destCoor)
 
         if (didPiecePromote) {
             const playerPawn = new Cell(this.isWhiteTurn ? colour.white : colour.black, piece.pawn);
-            this.#setCell(playerPawn, movingPos);
+            this.#setCell(playerPawn, movingCoor);
         }
 
         dangerScanBoard(this);
     }
 
     #clearEnpassant() {
-        this.enpassantPosition = undefined;
+        this.enpassantCoordinate = undefined;
     }
 
-    #isCellMovable(pos) {
-        return this.rows[pos.r][pos.c].movePossible;
+    #isCellMovable(coor) {
+        return this.rows[coor.r][coor.c].movePossible;
     }
 
-    #markPossibleMovesForPos(pos) {
-        markPossibleMoves(this, pos);
+    #markPossibleMovesForCoor(coor) {
+        markPossibleMoves(this, coor);
 
-        const cell = this.getCell(pos);
+        const cell = this.getCell(coor);
         if (cell.piece === piece.king) {
             this.#markPossibleCastlingMoves(cell.colour)
         }
     }
 
-    #promoteCell(pos) {
-        const cellColour = this.colourAtCell(pos);
+    #promoteCell(coor) {
+        const cellColour = this.colourAtCell(coor);
         this.#setCell(
-            {piece: piece.queen, colour: cellColour}, pos
+            {piece: piece.queen, colour: cellColour}, coor
         );
     }
 
-    #removeEnpassantPawnIfAttacked(movingPos, destPos) {
-        const movingCell = this.getCell(movingPos);
-        const dyingCell = this.getCell(destPos);
+    #removeEnpassantPawnIfAttacked(movingCoor, destCoor) {
+        const movingCell = this.getCell(movingCoor);
+        const dyingCell = this.getCell(destCoor);
 
         if (movingCell.piece === piece.pawn) {
-            const pawnDirection = Vector.makeDirectionVec(movingPos, destPos);
+            const pawnDirection = Vector.makeDirectionVec(movingCoor, destCoor);
             const isPawnAttacking = pawnDirection.x !== 0;
             if (dyingCell.piece === piece.none && isPawnAttacking) {
-                const dyingPawnPos = destPos.addR(-pawnDirection.y);
-                this.#removePieceAtCell(dyingPawnPos);
+                const dyingPawnCoor = destCoor.addR(-pawnDirection.y);
+                this.#removePieceAtCell(dyingPawnCoor);
             }
         }
     }
 
-    #setPossibleEnpassantPosition(movingPos, destPos) {
+    #setPossibleEnpassantCoordinate(movingCoor, destCoor) {
         this.#clearEnpassant();
 
-        const movingCell = this.getCell(movingPos);
-        const numberOfSpacesMoved = Math.abs(destPos.r - movingPos.r);
+        const movingCell = this.getCell(movingCoor);
+        const numberOfSpacesMoved = Math.abs(destCoor.r - movingCoor.r);
 
         if (movingCell.piece === piece.pawn && numberOfSpacesMoved === 2) {
-            const movingDirection = Vector.makeDirectionVec(movingPos, destPos);
-            this.enpassantPosition = movingPos.add(movingDirection);
+            const movingDirection = Vector.makeDirectionVec(movingCoor, destCoor);
+            this.enpassantCoordinate = movingCoor.add(movingDirection);
         }
     }
 
-    #isCellPromotable(cell, pos) {
+    #isCellPromotable(cell, coor) {
         return (cell.colour === colour.white &&
             cell.piece === piece.pawn &&
-            pos.r === 0) ||
+            coor.r === 0) ||
             (cell.colour === colour.black &&
                 cell.piece === piece.pawn &&
-                pos.r === this.getHeight() - 1)
+                coor.r === this.getHeight() - 1)
     }
-
-    #movePossibleRookCastleMove(destPos, movingPos) {
-        const movedCell = this.getCell(destPos);
+    
+    #movePossibleRookCastleMove(destCoor, movingCoor) {
+        const movedCell = this.getCell(destCoor);
         const curColour = movedCell.colour;
+        const row = curColour === colour.white ? this.getHeight() - 1 : 0;
 
-        if (movedCell.piece === piece.king && movingPos.c - destPos.c === -2) {
-            if (curColour === colour.white) {
-                const rookPos = createPos(this.getHeight() - 1, this.getWidth() - 1);
-                const rookCell = this.getCell(rookPos);
-                this.#setCell(rookCell, destPos.add(createVec(-1, 0)))
-                this.#removePieceAtCell(rookPos);
-            } else {
-                const rookPos = createPos(0, this.getWidth() - 1);
-                const rookCell = this.getCell(rookPos);
-                this.#setCell(rookCell, destPos.add(createVec(-1, 0)))
-                this.#removePieceAtCell(rookPos);
-            }
-        }
+        if (movedCell.piece !== piece.king || Math.abs(movingCoor.c - destCoor.c) !== 2) return;
 
-        if (movedCell.piece === piece.king && movingPos.c - destPos.c === 2) {
-            if (curColour === colour.white) {
-                const rookPos = createPos(this.getHeight() - 1, 0);
-                const rookCell = this.getCell(rookPos);
-                this.#setCell(rookCell, destPos.add(createVec(1, 0)))
-                this.#removePieceAtCell(rookPos);
-            } else {
-                const rookPos = createPos(0, 0);
-                const rookCell = this.getCell(rookPos);
-                this.#setCell(rookCell, destPos.add(createVec(1, 0)))
-                this.#removePieceAtCell(rookPos);
-            }
-        }
+        const rookCol = movingCoor.c - destCoor.c > 0 ? 0 : this.getWidth() - 1;
+        const oppositeDirectionVec = Vector.makeDirectionVec(destCoor, movingCoor);
+
+        const rookCoor = createCoordinate(row, rookCol);
+        const rookCell = this.getCell(rookCoor);
+        this.#setCell(rookCell, destCoor.add(oppositeDirectionVec))
+        this.#removePieceAtCell(rookCoor);
     }
 
-    #canKingMoveToPos(pos, pieceColour, attackingPos) {
-        if (!this.legalPosition(pos)) return false;
+    #canKingMoveToCoor(coor, pieceColour, attackingCoor) {
+        if (!this.legalCoordinate(coor)) return false;
 
-        const attackingPiece = this.pieceAtCell(attackingPos);
-        const kingPos = this.getKingPos(pieceColour);
-        const attackDirection = Vector.makeDirectionVec(attackingPos, kingPos);
-        const isAttackerAPinner = attackingPiece === piece.bishop || attackingPiece === piece.rook || attackingPos === piece.queen
+        const attackingPiece = this.pieceAtCell(attackingCoor);
+        const kingCoor = this.getKingCoor(pieceColour);
+        const attackDirection = Vector.makeDirectionVec(attackingCoor, kingCoor);
+        const isAttackerAPinner = attackingPiece === piece.bishop || attackingPiece === piece.rook || attackingCoor === piece.queen
 
-        if (isAttackerAPinner && kingPos.add(attackDirection).equals(pos)) return false;
-        return !this.isCellChecked(pos, pieceColour) && this.getCell(pos).colour !== pieceColour;
+        if (isAttackerAPinner && kingCoor.add(attackDirection).equals(coor)) return false;
+        return !this.isCellChecked(coor, pieceColour) && this.getCell(coor).colour !== pieceColour;
     }
 
     #markPossibleCastlingMoves(kingColour) {
         if (this.#canKingCastleQueenSide(kingColour)) {
-            this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(-2, 0)));
+            this.setMovePossibleOnCell(this.getKingCoor(kingColour).add(createVec(-2, 0)));
         }
 
         if (this.#canKingCastleKingSide(kingColour)) {
-            this.setMovePossibleOnCell(this.getKingPos(kingColour).add(createVec(2, 0)));
+            this.setMovePossibleOnCell(this.getKingCoor(kingColour).add(createVec(2, 0)));
         }
     }
 
-    #findKingPositions() {
+    #findKingCoordinates() {
         for (let r = 0; r < this.getHeight(); r++) {
             for (let c = 0; c < this.getWidth(); c++) {
-                const cell = this.getCell(createPos(r, c));
-                if (cell.piece === piece.king && cell.colour === colour.white) this.whiteKingPos = createPos(r, c);
-                if (cell.piece === piece.king && cell.colour === colour.black) this.blackKingPos = createPos(r, c);
+                const cell = this.getCell(createCoordinate(r, c));
+                if (cell.piece === piece.king && cell.colour === colour.white) this.whiteKingCoor = createCoordinate(r, c);
+                if (cell.piece === piece.king && cell.colour === colour.black) this.blackKingCoor = createCoordinate(r, c);
             }
         }
     }

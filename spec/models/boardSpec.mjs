@@ -168,9 +168,9 @@ describe("Board", function () {
     describe("invalid moves", function () {
         it("should throw an error on invalid positions", function () {
             board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-            expect(function () { board.movePiece("invalid", "z10") }).toThrow(new Error("Invalid location"));
-            expect(function () { board.movePiece("a9", "a2") }).toThrow(new Error("Invalid location"));
-            expect(function () { board.movePiece("a1", "b9") }).toThrow(new Error("Invalid location"));
+            expect(function () { board.movePiece("invalid", "z10") }).toThrow(new Error("Invalid position"));
+            expect(function () { board.movePiece("a9", "a2") }).toThrow(new Error("Invalid position"));
+            expect(function () { board.movePiece("a1", "b9") }).toThrow(new Error("Invalid position"));
             expect(getFenBoardRep(board)).toEqual("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
         })
 

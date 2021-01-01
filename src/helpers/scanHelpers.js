@@ -1,6 +1,6 @@
 // danger scan methods
 
-import {createPos} from "../models/position.js";
+import {createCoordinate} from "../models/coordinate.js";
 import {colour, piece, swapColour} from "../models/piece.js";
 import {createVec, Vector} from "../models/vector.js";
 
@@ -9,43 +9,43 @@ function dangerScanBoard(board) {
 
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
-            dangerScan(board, createPos(r, c))
+            dangerScan(board, createCoordinate(r, c))
         }
     }
 }
 
-function dangerScan(board, startPos) {
-    const threateningCell = board.getCell(startPos)
+function dangerScan(board, startCoor) {
+    const threateningCell = board.getCell(startCoor)
 
     const cellScanMethod = cellScanMethodMap[threateningCell.piece];
-    cellScanMethod(board, threateningCell.colour, startPos, addCheckToCell)
+    cellScanMethod(board, threateningCell.colour, startCoor, addCheckToCell)
 }
 
 const cellScanMethodMap = {
     none: () => {},
     pawn:  pawnDangerScan,
     knight: knightScan,
-    bishop: (board, pieceColour, startPos, scanMethod) => (crossScan(board, piece.bishop, pieceColour, startPos, scanMethod)),
-    rook: (board, pieceColour, startPos, scanMethod) => (plusScan(board, piece.rook, pieceColour, startPos, scanMethod)),
-    queen: (board, pieceColour, startPos, scanMethod) => {
-        plusScan(board, piece.queen, pieceColour, startPos, scanMethod)
-        crossScan(board, piece.queen, pieceColour, startPos, scanMethod)
+    bishop: (board, pieceColour, startCoor, scanMethod) => (crossScan(board, piece.bishop, pieceColour, startCoor, scanMethod)),
+    rook: (board, pieceColour, startCoor, scanMethod) => (plusScan(board, piece.rook, pieceColour, startCoor, scanMethod)),
+    queen: (board, pieceColour, startCoor, scanMethod) => {
+        plusScan(board, piece.queen, pieceColour, startCoor, scanMethod)
+        crossScan(board, piece.queen, pieceColour, startCoor, scanMethod)
     },
     king: kingScan
 }
 
 // scan methods
 
-function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, scanMethod) {
+function scanInDirection(board, cellPiece, pieceColour, startCoor, directionVec, scanMethod) {
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
-    const {r, c} = { r: startPos.r, c: startPos.c};
+    const {r, c} = { r: startCoor.r, c: startCoor.c};
 
     let i = 1;
-    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
-        const curPos = createPos(r + i * vy, c + i * vx);
-        scanMethod(board, pieceColour, cellPiece, curPos, directionVec);
+    while (board.legalCoordinate(createCoordinate(r + i * vy, c + i * vx))) {
+        const curCoor = createCoordinate(r + i * vy, c + i * vx);
+        scanMethod(board, pieceColour, cellPiece, curCoor, directionVec);
 
-        if (board.pieceAtCell(curPos) !== piece.none) {
+        if (board.pieceAtCell(curCoor) !== piece.none) {
             return;
         }
 
@@ -53,154 +53,154 @@ function scanInDirection(board, cellPiece, pieceColour, startPos, directionVec, 
     }
 }
 
-function pawnDangerScan(board, pieceColour, startPos, scanMethod) {
-    const r = startPos.r;
-    const c = startPos.c;
+function pawnDangerScan(board, pieceColour, startCoor, scanMethod) {
+    const r = startCoor.r;
+    const c = startCoor.c;
 
     if (pieceColour === colour.white) {
-        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c - 1), createVec(-1, -1))
-        scanMethod(board, pieceColour, piece.pawn, createPos(r - 1, c + 1), createVec(-1, 1))
+        scanMethod(board, pieceColour, piece.pawn, createCoordinate(r - 1, c - 1), createVec(-1, -1))
+        scanMethod(board, pieceColour, piece.pawn, createCoordinate(r - 1, c + 1), createVec(-1, 1))
     } else {
-        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c - 1), createVec(1, -1))
-        scanMethod(board, pieceColour, piece.pawn, createPos(r + 1, c + 1), createVec(1, 1))
+        scanMethod(board, pieceColour, piece.pawn, createCoordinate(r + 1, c - 1), createVec(1, -1))
+        scanMethod(board, pieceColour, piece.pawn, createCoordinate(r + 1, c + 1), createVec(1, 1))
     }
 }
 
-function pawnMoveScan(board, pieceColour, startPos, scanMethod) {
-    if (pieceColour === colour.white && board.legalPosition(startPos.addR(-1)) && board.isCellEmpty(startPos.addR(-1))) {
-        scanMethod(board, pieceColour, piece.pawn, startPos.addR(-1))
+function pawnMoveScan(board, pieceColour, startCoor, scanMethod) {
+    if (pieceColour === colour.white && board.legalCoordinate(startCoor.addR(-1)) && board.isCellEmpty(startCoor.addR(-1))) {
+        scanMethod(board, pieceColour, piece.pawn, startCoor.addR(-1))
 
-        if (startPos.r === board.getHeight() - 2 && board.legalPosition(startPos.addR(-2)) && board.isCellEmpty(startPos.addR(-2))) {
-            scanMethod(board, pieceColour, piece.pawn, startPos.addR(-2));
+        if (startCoor.r === board.getHeight() - 2 && board.legalCoordinate(startCoor.addR(-2)) && board.isCellEmpty(startCoor.addR(-2))) {
+            scanMethod(board, pieceColour, piece.pawn, startCoor.addR(-2));
         }
-    } else if (pieceColour === colour.black && board.legalPosition(startPos.addR(1)) && board.isCellEmpty(startPos.addR(1))) {
-        scanMethod(board, pieceColour, piece.pawn, startPos.addR(1))
+    } else if (pieceColour === colour.black && board.legalCoordinate(startCoor.addR(1)) && board.isCellEmpty(startCoor.addR(1))) {
+        scanMethod(board, pieceColour, piece.pawn, startCoor.addR(1))
 
-        if (startPos.r === 1 && board.legalPosition(startPos.addR(2)) && board.isCellEmpty(startPos.addR(2))) {
-            scanMethod(board, pieceColour, piece.pawn, startPos.addR(2));
+        if (startCoor.r === 1 && board.legalCoordinate(startCoor.addR(2)) && board.isCellEmpty(startCoor.addR(2))) {
+            scanMethod(board, pieceColour, piece.pawn, startCoor.addR(2));
         }
     }
 }
 
-function knightScan(board, pieceColour, startPos, scanMethod) {
-    const r = startPos.r;
-    const c = startPos.c;
+function knightScan(board, pieceColour, startCoor, scanMethod) {
+    const r = startCoor.r;
+    const c = startCoor.c;
 
-    scanMethod(board, pieceColour, piece.knight, createPos(r + 2, c - 1))
-    scanMethod(board, pieceColour, piece.knight, createPos(r + 2, c + 1))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r + 2, c - 1))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r + 2, c + 1))
 
-    scanMethod(board, pieceColour, piece.knight, createPos(r - 2, c - 1))
-    scanMethod(board, pieceColour, piece.knight, createPos(r - 2, c + 1))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r - 2, c - 1))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r - 2, c + 1))
 
-    scanMethod(board, pieceColour, piece.knight, createPos(r + 1, c + 2))
-    scanMethod(board, pieceColour, piece.knight, createPos(r - 1, c + 2))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r + 1, c + 2))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r - 1, c + 2))
 
-    scanMethod(board, pieceColour, piece.knight, createPos(r + 1, c - 2))
-    scanMethod(board, pieceColour, piece.knight, createPos(r - 1, c - 2))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r + 1, c - 2))
+    scanMethod(board, pieceColour, piece.knight, createCoordinate(r - 1, c - 2))
 }
 
-function kingScan(board, pieceColour, startPos, scanMethod) {
-    const r = startPos.r;
-    const c = startPos.c;
+function kingScan(board, pieceColour, startCoor, scanMethod) {
+    const r = startCoor.r;
+    const c = startCoor.c;
 
-    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c - 1))
-    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c ))
-    scanMethod(board, pieceColour, piece.king, createPos(r + 1, c + 1 ))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r + 1, c - 1))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r + 1, c ))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r + 1, c + 1 ))
 
-    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c - 1))
-    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c ))
-    scanMethod(board, pieceColour, piece.king, createPos(r - 1, c + 1 ))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r - 1, c - 1))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r - 1, c ))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r - 1, c + 1 ))
 
-    scanMethod(board, pieceColour, piece.king, createPos(r, c - 1))
-    scanMethod(board, pieceColour, piece.king, createPos(r, c + 1))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r, c - 1))
+    scanMethod(board, pieceColour, piece.king, createCoordinate(r, c + 1))
 }
 
-function plusScan(board, cellPiece, pieceColour, startPos, scanMethod) {
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, 1), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 0), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(0, -1), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 0), scanMethod)
+function plusScan(board, cellPiece, pieceColour, startCoor, scanMethod) {
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(0, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(1, 0), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(0, -1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(-1, 0), scanMethod)
 }
 
-function crossScan(board, cellPiece, pieceColour, startPos, scanMethod) {
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, 1), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(1, -1), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, 1), scanMethod)
-    scanInDirection(board, cellPiece, pieceColour, startPos, createVec(-1, -1), scanMethod)
+function crossScan(board, cellPiece, pieceColour, startCoor, scanMethod) {
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(1, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(1, -1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(-1, 1), scanMethod)
+    scanInDirection(board, cellPiece, pieceColour, startCoor, createVec(-1, -1), scanMethod)
 }
 
 // Mark methods
 
-function markPossibleMoves(board, pos) {
-    const cell = board.getCell(pos);
+function markPossibleMoves(board, Coor) {
+    const cell = board.getCell(Coor);
 
     if (cell === undefined || cell.piece === piece.none) return;
 
     const cellScanMethod = cellScanMethodMap[cell.piece];
-    cellScanMethod(board, cell.colour, pos, addPossibleMove)
+    cellScanMethod(board, cell.colour, Coor, addPossibleMove)
 
     if (cell.piece === piece.pawn) {
-        pawnMoveScan(board, cell.colour, pos, addPossibleMove)
+        pawnMoveScan(board, cell.colour, Coor, addPossibleMove)
     }
 }
 
 // board scan methods
 
-function addCheckToCell(board, pieceColour, cellPiece, curPos, directionVec) {
-    board.checkCell(pieceColour, curPos);
+function addCheckToCell(board, pieceColour, cellPiece, curCoor, directionVec) {
+    board.checkCell(pieceColour, curCoor);
 
-    const curCell = board.getCell(curPos);
+    const curCell = board.getCell(curCoor);
     if (curCell === undefined) return;
 
     if (cellPiece === piece.pawn) {
-        board.setPieceAsCheckedByPawn(pieceColour, curPos)
+        board.setPieceAsCheckedByPawn(pieceColour, curCoor)
     }
 
     if (cellPiece === piece.king) {
-        board.setPieceAsCheckedByKing(pieceColour, curPos);
+        board.setPieceAsCheckedByKing(pieceColour, curCoor);
     } else if (curCell.piece !== piece.none && curCell.colour === swapColour(pieceColour) && directionVec !== undefined) {
-        const enemyKingPos = board.getKingPos(swapColour(pieceColour));
-        const directionToKing = Vector.makeDirectionVec(curPos, enemyKingPos);
-        if (directionToKing.equals(directionVec) && isPathBetweenEmpty(board, curPos, enemyKingPos)) {
-            board.setCellAsPinned(curPos);
+        const enemyKingCoor = board.getKingCoor(swapColour(pieceColour));
+        const directionToKing = Vector.makeDirectionVec(curCoor, enemyKingCoor);
+        if (directionToKing.equals(directionVec) && isPathBetweenEmpty(board, curCoor, enemyKingCoor)) {
+            board.setCellAsPinned(curCoor);
         }
     }
 }
 
-function addPossibleMove(board, pieceColour, cellPiece, curPos, directionVec) {
-    if (!board.legalPosition(curPos)) return;
+function addPossibleMove(board, pieceColour, cellPiece, curCoor, directionVec) {
+    if (!board.legalCoordinate(curCoor)) return;
     if (cellPiece === piece.none) return;
     if (cellPiece === piece.pawn &&
-        board.isCellEmpty(curPos) &&
+        board.isCellEmpty(curCoor) &&
         directionVec !== undefined &&
-        !board.canEnpassant(curPos)) return;
-    if (cellPiece === piece.king && board.isCellChecked(curPos, pieceColour)) return;
+        !board.canEnpassant(curCoor)) return;
+    if (cellPiece === piece.king && board.isCellChecked(curCoor, pieceColour)) return;
 
-    if (board.isCellEmpty(curPos)) {
-        board.setMovePossibleOnCell(curPos);
+    if (board.isCellEmpty(curCoor)) {
+        board.setMovePossibleOnCell(curCoor);
         return;
     }
 
-    if (board.colourAtCell(curPos) !== pieceColour) {
+    if (board.colourAtCell(curCoor) !== pieceColour) {
         if (cellPiece === piece.pawn && directionVec === undefined) return;
-        board.setMovePossibleOnCell(curPos);
+        board.setMovePossibleOnCell(curCoor);
     }
 }
 
-function isCellBlockableInDirection(board, attackingPos, defendingPos, defendingColour) {
-    const directionVec = Vector.makeDirectionVec(attackingPos, defendingPos);
+function isCellBlockableInDirection(board, attackingCoor, defendingCoor, defendingColour) {
+    const directionVec = Vector.makeDirectionVec(attackingCoor, defendingCoor);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
-    const {r, c} = { r: attackingPos.r, c: attackingPos.c};
+    const {r, c} = { r: attackingCoor.r, c: attackingCoor.c};
 
     let i = 1;
-    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
-        const curPos = createPos(r + i * vy, c + i * vx);
+    while (board.legalCoordinate(createCoordinate(r + i * vy, c + i * vx))) {
+        const curCoor = createCoordinate(r + i * vy, c + i * vx);
 
-        if (board.pieceAtCell(curPos) !== piece.none) {
+        if (board.pieceAtCell(curCoor) !== piece.none) {
             return false;
         }
 
-        if (board.canCellBeTakenByColour(curPos, defendingColour)) {
+        if (board.canCellBeTakenByColour(curCoor, defendingColour)) {
             return true;
         }
 
@@ -210,18 +210,18 @@ function isCellBlockableInDirection(board, attackingPos, defendingPos, defending
     return false;
 }
 
-function isPathBetweenEmpty(board, startPos, endPos) {
-    const directionVec = Vector.makeDirectionVec(startPos, endPos);
+function isPathBetweenEmpty(board, startCoor, endCoor) {
+    const directionVec = Vector.makeDirectionVec(startCoor, endCoor);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
-    const {r, c} = { r: startPos.r, c: startPos.c};
+    const {r, c} = { r: startCoor.r, c: startCoor.c};
 
     let i = 1;
-    while (board.legalPosition(createPos(r + i * vy, c + i * vx))) {
-        const curPos = createPos(r + i * vy, c + i * vx);
+    while (board.legalCoordinate(createCoordinate(r + i * vy, c + i * vx))) {
+        const curCoor = createCoordinate(r + i * vy, c + i * vx);
 
-        if (curPos.equals(endPos)) return true;
+        if (curCoor.equals(endCoor)) return true;
 
-        if (board.pieceAtCell(curPos) !== piece.none) {
+        if (board.pieceAtCell(curCoor) !== piece.none) {
             return false;
         }
 
@@ -231,27 +231,27 @@ function isPathBetweenEmpty(board, startPos, endPos) {
     return false;
 }
 
-function canPinnedPieceMove(board, pos) {
-    if (!board.isCellPinned(pos)) return true;
-    const cell = board.getCell(pos);
-    const kingPos = board.getKingPos(cell.colour);
-    const directionVec = Vector.makeDirectionVec(pos, kingPos);
+function canPinnedPieceMove(board, Coor) {
+    if (!board.isCellPinned(Coor)) return true;
+    const cell = board.getCell(Coor);
+    const kingCoor = board.getKingCoor(cell.colour);
+    const directionVec = Vector.makeDirectionVec(Coor, kingCoor);
 
     if (cell.piece === piece.knight) return false;
     if (cell.piece === piece.pawn && !directionVec.isDiagonal() && cell.colour === colour.white &&
-        board.isCellEmpty(pos.addR(-1)))
+        board.isCellEmpty(Coor.addR(-1)))
         return true;
     if (cell.piece === piece.pawn && !directionVec.isDiagonal() && cell.colour === colour.black &&
-        board.isCellEmpty(pos.addR(1)))
+        board.isCellEmpty(Coor.addR(1)))
         return true;
     if (cell.piece === piece.bishop && directionVec.isDiagonal() &&
-        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        (board.isCellEmpty(Coor.add(directionVec)) || board.isCellEmpty(Coor.add(directionVec.neg()))))
         return true;
     if (cell.piece === piece.rook && !directionVec.isDiagonal() &&
-        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        (board.isCellEmpty(Coor.add(directionVec)) || board.isCellEmpty(Coor.add(directionVec.neg()))))
         return true;
     if (cell.piece === piece.queen &&
-        (board.isCellEmpty(pos.add(directionVec)) || board.isCellEmpty(pos.add(directionVec.neg()))))
+        (board.isCellEmpty(Coor.add(directionVec)) || board.isCellEmpty(Coor.add(directionVec.neg()))))
         return true;
 
 }
