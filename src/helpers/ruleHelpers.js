@@ -1,6 +1,6 @@
 import {createCoordinate} from "../models/coordinate.js";
 import {piece} from "../models/piece.js";
-import {markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
+import {canPinnedPieceMove, markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
 
 function canColourMove(board) {
     const turnColour = board.getCurrentTurnColour();
@@ -14,11 +14,11 @@ function canColourMove(board) {
             // TODO: Move down into board
             markPossibleMoves(board, curPos)
             if (board.isAnyCellMovable()) {
-                // if (!canPinnedPieceMove(board, curPos)) { TODO: Test
-                //     board.clearPossibleMoves();
-                //     continue;
-                //
-                // }
+                if (!canPinnedPieceMove(board, curPos)) {
+                    board.clearPossibleMoves();
+                    continue;
+
+                }
                 board.clearPossibleMoves();
                 return true;
             }

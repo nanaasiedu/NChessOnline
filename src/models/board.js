@@ -256,7 +256,22 @@ class Board {
     }
 
     hasInsufficientMaterial() {
-        return false;
+        const fen = this.getFEN();
+        const includeAtLeastOne = (str, list) => {
+            for (let item of list) {
+                if (str.includes(item)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        const countOccurrences = (str, val) => str.split("").reduce((a, v) => (v === val ? a + 1 : a), 0);
+
+        return !fen.includes("K") || !fen.includes("k") ||
+            !(includeAtLeastOne(fen, ["R", "r", "p", "P", "q", "Q"]) ||
+                countOccurrences(fen, "b") + countOccurrences(fen, "n") >= 2 ||
+                countOccurrences(fen, "B") + countOccurrences(fen, "N") >= 2);
     }
 
     // DIMENSIONS ============== // TODO: test

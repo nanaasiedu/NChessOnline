@@ -57,15 +57,31 @@ describe("draw", function () {
 
         assertDraw("1q6/5ppb/4p1k1/4b2p/7P/3P2pK/6P1/8 w", false);
         assertDraw("8/7R/8/8/3K4/1P3p2/Pp1B4/k7 b", false);
+
+        assertDraw("7k/4B1pP/2p3PQ/2P1K3/8/8/R7/8 b", false);
     })
 
     it("occurs when player doesnt have any legal move", function () {
         assertDraw("1q6/5ppb/4p1k1/4b2p/3p3P/3P2pK/6P1/8 w", true);
-        assertDraw("8/7R/8/8/3K1P2/1P3p2/Pp1B4/k7 b", true);
+        assertDraw("7k/4B1pP/2p3P1/2P1K3/8/8/R7/8 b", true);
+        assertDraw("7k/6pP/2p3PQ/2P1B3/3K4/8/R7/8 b", true);
     })
 
-    it("occurs when there are insufficient material", function () {
+    it("doesnt occur when there is sufficient material", function () {
+        assertDraw("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", false);
+        assertDraw("4k3/8/8/8/8/8/5R2/4K3", false);
+        assertDraw("4k3/3r4/8/8/8/8/8/4K3", false);
+        assertDraw("4k3/3n1b2/8/8/8/8/8/4K3", false);
+        assertDraw("3k4/8/8/8/8/8/P7/3K4", false);
+    })
 
+    it("occurs when there is insufficient material", function () {
+        assertDraw("3k4/4n3/8/8/8/8/2B5/3K4", true);
+        assertDraw("3k4/8/8/8/8/8/8/3K4", true);
+        assertDraw("3k4/2b5/8/8/8/8/4B3/3K4", true);
+
+        // Special cases
+        assertDraw("8/8/8/8/8/8/8/8", true);
     })
 
     function assertDraw(fen, result) {
