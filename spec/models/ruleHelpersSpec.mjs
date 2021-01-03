@@ -38,7 +38,7 @@ describe("check mate", function () {
         assertCheckMate("3k4/3Q4/2K5/8/8/8/8/8 b", true);
         assertCheckMate("r1bqkbnr/ppp2Qpp/2np4/4p3/2B5/4P3/PPPP1PPP/RNB1K1NR b", true);
 
-        assertCheckMate("8/PkPP4/1Q5R/3B4/8/8/8/8 b", true);
+        assertCheckMate("7R/PkPp4/1P5R/Q2B4/8/8/8/8 b", true);
         assertCheckMate("3k4/8/8/7b/8/2qr4/7R/3K4 w", true);
     })
 
