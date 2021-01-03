@@ -49,7 +49,7 @@ class GameManager {
 
         this._switchToNormalMode();
 
-        if (isCheckMate(this.board, destCoor)) {
+        if (isCheckMate(this.board)) {
             this._endGameWithCheckMate();
             return;
         }

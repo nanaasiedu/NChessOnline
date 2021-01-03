@@ -9,16 +9,23 @@ function dangerScanBoard(board) {
 
     for (let r = 0; r < board.getHeight(); r++) {
         for (let c = 0; c < board.getWidth(); c++) {
-            dangerScan(board, createCoordinate(r, c))
+            dangerScanFromCoor(board, createCoordinate(r, c))
         }
     }
 }
 
-function dangerScan(board, startCoor) {
-    const threateningCell = board.getCell(startCoor)
+function dangerScanFromCoor(board, startCoor) {
+    const checkingCell = board.getCell(startCoor)
+    const opponentColour = swapColour(checkingCell.colour);
+    const checkStateBeforeScan = board.isKingChecked(opponentColour);
 
-    const cellScanMethod = cellScanMethodMap[threateningCell.piece];
-    cellScanMethod(board, threateningCell.colour, startCoor, addCheckToCell)
+    const cellScanMethod = cellScanMethodMap[checkingCell.piece];
+    cellScanMethod(board, checkingCell.colour, startCoor, addCheckToCell)
+
+    if (!checkStateBeforeScan && board.isKingChecked(opponentColour)) {
+        board.setCheckingCoor(startCoor);
+    }
+
 }
 
 const cellScanMethodMap = {
@@ -187,7 +194,12 @@ function addPossibleMove(board, pieceColour, cellPiece, curCoor, directionVec) {
     }
 }
 
-function isCellBlockableInDirection(board, attackingCoor, defendingCoor, defendingColour) {
+function isCellBlockableInDirection(board, defendingCoor, defendingColour) {
+    const attackingCoor = board.getCheckingCoor();
+    if (attackingCoor === undefined) {
+        return true;
+    }
+
     const directionVec = Vector.makeDirectionVec(attackingCoor, defendingCoor);
     const {vx, vy} = {vx: directionVec.x, vy: directionVec.y};
     const {r, c} = { r: attackingCoor.r, c: attackingCoor.c};

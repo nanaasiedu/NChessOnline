@@ -1,6 +1,6 @@
 import {createCoordinate} from "../models/coordinate.js";
 import {piece} from "../models/piece.js";
-import {canPinnedPieceMove, markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
+import {markPossibleMoves, isCellBlockableInDirection} from "./scanHelpers.js";
 
 function canColourMove(board) {
     const turnColour = board.getCurrentTurnColour();
@@ -14,11 +14,11 @@ function canColourMove(board) {
             // TODO: Move down into board
             markPossibleMoves(board, curPos)
             if (board.isAnyCellMovable()) {
-                if (!canPinnedPieceMove(board, curPos)) {
-                    board.clearPossibleMoves();
-                    continue;
-
-                }
+                // if (!canPinnedPieceMove(board, curPos)) { TODO: Test
+                //     board.clearPossibleMoves();
+                //     continue;
+                //
+                // }
                 board.clearPossibleMoves();
                 return true;
             }
@@ -28,17 +28,16 @@ function canColourMove(board) {
     return false;
 }
 
-export function isCheckMate(board, checkingPiecePos) {
+export function isCheckMate(board) {
     const turnColour = board.getCurrentTurnColour();
 
     if (!board.isKingChecked(turnColour)) return false;
-    if (board.canKingMove(turnColour, checkingPiecePos)) return false;
+    if (board.canKingMove(turnColour)) return false;
     if (board.isKingDoubleChecked(turnColour)) return true;
     if (isCellBlockableInDirection(board,
-        checkingPiecePos,
         board.getKingCoor(turnColour),
         turnColour)) return false;
-    return !board.canCellBeTakenByColour(checkingPiecePos, turnColour);
+    return !board.canCheckingCellBeTaken();
 }
 
 export function isDraw(board) {
