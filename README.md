@@ -2,21 +2,29 @@
 
 NChess Online is a basic chess app that allows people to play chess against their friends.
 
-### Local
+## Environment
+
+The app should work with all environments that have installed. If you are having issues running commands try upgrade your node version (should work with node >14)
+## Local
 
 You can run a local node server using this command. The app will start at ```localhost:8080```
 
 ``npm start # run local web server
 ``
 
-### Deployment
+## Deployment
 #### Heroku
 ``git push heroku master
 ``
 
-### End To End testing
+## Unit tests
 
-The end to end test run using [cypress](https://www.cypress.io/).
+``npm run test
+``
+
+## End To End testing
+
+The end to end test run using [cypress](https://www.cypress.io/). Make sure the app is running locally before starting tests.
 
 ```npm run e2e```
 

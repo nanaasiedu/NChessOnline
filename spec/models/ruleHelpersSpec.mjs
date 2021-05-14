@@ -10,7 +10,7 @@ describe("check mate", function () {
         assertCheckMate("4r3/8/r2b4/3K4/7q/8/8/2q3k1 b", false);
     })
 
-    it("doesnt occur when king is checked but can can move", function () {
+    it("doesnt occur when king is checked but can move", function () {
         assertCheckMate("rnbqk2r/ppp3pp/8/8/1b6/8/PPP2PPP/RNBQKBNR w", false);
         assertCheckMate("rnbqkbnr/ppp3pp/8/1B1N4/8/8/PPPPPPPP/R1BQK1NR b", false);
     })
