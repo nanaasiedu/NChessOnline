@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --experimental-modules server.js",
     "cypress:open": "cypress open",
-    "e2e": "cypress open",
+    "e2e": "cypress run",
     "test": "jasmine"
   },
   "name": "nchessonline",
