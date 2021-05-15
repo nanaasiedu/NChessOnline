@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node --experimental-modules server.js",
+    "start:background": "nohup node --experimental-modules server.js &",
     "cypress:open": "cypress open",
     "e2e": "cypress run",
     "test": "jasmine"
@@ -18,7 +19,8 @@
     "jasmine": "^3.6.3"
   },
   "dependencies": {
-    "node-static": "^0.7.11"
+    "node-static": "^0.7.11",
+    "nohup": "^0.1.0"
   },
   "repository": {
     "type": "git",

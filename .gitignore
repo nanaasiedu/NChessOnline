@@ -5,3 +5,4 @@ npm-debug.log
 /*.env
 pgn-extract
 cypress/videos
+nohup.out
