@@ -11,7 +11,6 @@ on:
 
 jobs:
   unit-test:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -39,3 +38,13 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           start: npm run start:background
+
+  deploy-heroku:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "nchess"
+          heroku_email: "nanaasiedu0@gmail.com"
