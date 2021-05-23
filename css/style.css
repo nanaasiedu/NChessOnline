@@ -1,9 +1,15 @@
 body {
+    margin: 0px;
+    background-color: #cce0ff;
+}
+
+.main {
     display: flex;
     flex-direction: column;
     width: 100%;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .board {
@@ -48,4 +54,18 @@ body {
 
 .cell.selected {
     box-shadow:inset 0px 0px 0px 5px yellow;
+}
+
+.nav-bar {
+    margin: 0;
+    padding: 0px 20px;
+    overflow: hidden;
+    background-color: #4d94ff;
+    color: white;
+}
+
+.nav-bar .title {
+    font-family: Verdana;
+    font-size: 24px;
+    padding: 20px;
 }
