@@ -47,7 +47,7 @@ function addPieceToCell(pos, board) {
 
     if (cell.piece !== piece.none) {
         const pieceImage = document.createElement('img');
-        pieceImage.src = `images/pieces/${cell.colour}_${cell.piece}.png`;
+        pieceImage.src = `/images/pieces/${cell.colour}_${cell.piece}.png`;
         pieceImage.style.maxHeight = '100%'
         pieceImage.style.maxWidth = '100%'
         cellElement.appendChild(pieceImage);

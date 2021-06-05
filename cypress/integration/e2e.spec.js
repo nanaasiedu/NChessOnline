@@ -1,6 +1,6 @@
 context('White wins', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:8080')
+        startNewGame()
     })
 
     it('mate in four', () => {
@@ -14,7 +14,7 @@ context('White wins', () => {
 
 context('Black wins', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:8080')
+        startNewGame()
     })
 
     it('mate in four', () => {
@@ -24,7 +24,7 @@ context('Black wins', () => {
 
 context('Draw', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:8080')
+        startNewGame();
     })
 
     it('stalemate', () => {
@@ -32,10 +32,15 @@ context('Draw', () => {
     })
 })
 
+function startNewGame() {
+    cy.visit('http://localhost:8080')
+    cy.get(`.new-game`).click()
+}
+
 function runTestForLANPGNFile(fileLocation) {
     cy.readFile(fileLocation).then((pgnText) => {
         runTestForLANPGN(pgnText)
-    })
+    });
 }
 
 function runTestForLANPGN(pgnText) {
