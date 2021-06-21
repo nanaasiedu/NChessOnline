@@ -12,6 +12,13 @@ You can run a local node server using this command. The app will start at ```loc
 ``npm start # run local web server
 ``
 
+## Docker
+
+``
+docker build . -t chess-image   # Builds docker image that runs chess app server
+docker run chess-image          # Runs docker image
+``
+
 ## Deployment
 #### Heroku
 ``git push heroku master
