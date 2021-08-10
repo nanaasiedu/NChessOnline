@@ -15,7 +15,7 @@
   "description": "A chess program",
   "main": "server.js",
   "devDependencies": {
-    "cypress": "^6.2.0",
+    "cypress": "^6.9.1",
     "jasmine": "^3.6.3"
   },
   "dependencies": {

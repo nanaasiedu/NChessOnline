@@ -16,7 +16,7 @@ You can run a local node server using this command. The app will start at ```loc
 
 ``
 docker build . -t chess-image   # Builds docker image that runs chess app server
-docker run chess-image          # Runs docker image
+docker run -d -p 8080:8080 chess-image          # Runs docker image in background on port 8080
 ``
 
 ## Deployment
