@@ -2,11 +2,13 @@
     <head>
         <meta charset="utf-8"/>
         <link rel="stylesheet" href="/css/style.css">
-        <script type="module" src="/src/game-html.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script type="module" src="/src/game.js"></script>
     </head>
     <body>
         <ul class="nav-bar"><div class="title">NChess Web</div></ul>
         <div class="main">
+            <a class="btn btn-primary new-game" href="/index.html"> new game </a>
             <div class="score"></div>
             <div id="board" class="board">
                 <!-- Board is auto generated -->

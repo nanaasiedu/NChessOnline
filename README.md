@@ -33,7 +33,10 @@ docker run -d -p 8080:8080 chess-image          # Runs docker image in backgroun
 
 The end to end test run using [cypress](https://www.cypress.io/). Make sure the app is running locally before starting tests.
 
-```npm run e2e```
+```
+npm run e2e
+npx run cypress
+```
 
 The tests rely on [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) files in the [LAN format](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)).
 These files can be found in the ```fixtures``` folder of the cypress tests.
