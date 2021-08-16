@@ -68,4 +68,27 @@ body {
     font-family: Verdana;
     font-size: 24px;
     padding: 20px;
+    text-transform: uppercase;
+    font-style: bold;
+}
+
+.basic-btn {
+    padding: 1.5em 3em;
+    text-decoration: none;
+    background-color: white;
+    border-radius: 1em;
+    border: 2px solid #4d94ff;
+    color: #4d94ff;
+    text-transform: uppercase;
+    position:relative;
+    box-shadow: 0 5px 0 #4d94ff;
+    margin-bottom: 10px;
+}
+
+.basic-btn:hover {
+    background-color: #f5f5f5;
+    border-color: blue;
+    color: blue;
+    bottom: 5px;
+    box-shadow: 0 5px 0 blue;
 }

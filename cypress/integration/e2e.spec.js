@@ -34,7 +34,7 @@ context('Draw', () => {
 
 function startNewGame() {
     cy.visit('http://localhost:8080')
-    cy.get(`.new-game`).click()
+    cy.get(`#new-game`).click()
 }
 
 function runTestForLANPGNFile(fileLocation) {
