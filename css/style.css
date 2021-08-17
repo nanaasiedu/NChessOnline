@@ -1,12 +1,13 @@
+@import "palette.css";
+
 body {
     margin: 0px;
-    background-color: #cce0ff;
+    background-color: var(--calm-blue);
 }
 
 .main {
     display: flex;
     flex-direction: column;
-    width: 100%;
     justify-content: center;
     align-items: center;
     padding: 20px;
@@ -37,19 +38,35 @@ body {
 }
 
 .row:nth-child(odd) > .cell:nth-child(odd) {
-    background: white;
+    background: var(--light-square);
 }
 
 .row:nth-child(odd) > .cell:nth-child(even) {
-    background: grey;
+    background: var(--dark-square);
 }
 
 .row:nth-child(even) > .cell:nth-child(odd) {
-    background: grey;
+    background: var(--dark-square);
 }
 
 .row:nth-child(even) > .cell:nth-child(even) {
-    background: white;
+    background: var(--light-square);
+}
+
+.row:nth-child(odd) > .cell:nth-child(odd).selected {
+    background: var(--light-square-highlight);
+}
+
+.row:nth-child(odd) > .cell:nth-child(even).selected {
+    background: var(--dark-square-highlight);
+}
+
+.row:nth-child(even) > .cell:nth-child(odd).selected {
+    background: var(--dark-square-highlight);
+}
+
+.row:nth-child(even) > .cell:nth-child(even).selected {
+    background: var(--light-square-highlight);
 }
 
 .cell.selected {
@@ -60,7 +77,7 @@ body {
     margin: 0;
     padding: 0px 20px;
     overflow: hidden;
-    background-color: #4d94ff;
+    background-color: var(--hard-blue);
     color: white;
 }
 
@@ -77,11 +94,11 @@ body {
     text-decoration: none;
     background-color: white;
     border-radius: 1em;
-    border: 2px solid #4d94ff;
-    color: #4d94ff;
+    border: 2px solid var(--hard-blue);
+    color: var(--hard-blue);
     text-transform: uppercase;
     position:relative;
-    box-shadow: 0 5px 0 #4d94ff;
+    box-shadow: 0 5px 0 var(--calm-blue);
     margin-bottom: 10px;
 }
 
