@@ -2,15 +2,29 @@
 
 body {
     margin: 0px;
-    background-color: var(--calm-blue);
 }
 
 .main {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     padding: 20px;
+}
+
+.sections {
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+    padding: 0px 0px 0px 30px
+}
+
+.section {
+    width: 50%;
+}
+
+.image-section {
+    content:url("https://assets.dicebreaker.com/chess-playing-hand.jpeg/BROK/resize/1920x1920%3E/format/jpg/quality/80/chess-playing-hand.jpeg");
+    object-fit: cover;
 }
 
 .board {
@@ -77,7 +91,7 @@ body {
     margin: 0;
     padding: 0px 20px;
     overflow: hidden;
-    background-color: var(--hard-blue);
+    background-color: black;
     color: white;
 }
 
@@ -94,18 +108,17 @@ body {
     text-decoration: none;
     background-color: white;
     border-radius: 1em;
-    border: 2px solid var(--hard-blue);
-    color: var(--hard-blue);
+    border: 2px solid black;
+    color: black;
     text-transform: uppercase;
     position:relative;
-    box-shadow: 0 5px 0 var(--calm-blue);
+    box-shadow: 0 5px 0 grey;
     margin-bottom: 10px;
 }
 
 .basic-btn:hover {
-    background-color: #f5f5f5;
-    border-color: blue;
-    color: blue;
+    border-color: var(--btn-highlight);
+    color: var(--btn-highlight);
     bottom: 5px;
-    box-shadow: 0 5px 0 blue;
+    box-shadow: 0 5px 0 var(--btn-shadow);
 }
