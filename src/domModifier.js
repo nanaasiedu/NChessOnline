@@ -10,7 +10,7 @@ function setupDomBoard(board, gameManager) {
         const newRowElement = $('<div class="row"></div>');
 
         for (let c = 0; c < board.getWidth(); c++) {
-            const newCellElement = $(`<div class="cell" id="${cellId(r, c)}"></div>`);
+            const newCellElement = $(`<div class="cell idle" id="${cellId(r, c)}"></div>`);
             newCellElement.click((event) => selectCell(event, gameManager, r, c));
             newRowElement.append(newCellElement);
         }
@@ -57,6 +57,17 @@ function highlightCell (pos) {
     findCellElement(pos).addClass('selected');
 }
 
+function highlightCellAsError(pos) {
+    let element = findCellElement(pos);
+    element.addClass("error");
+    element.removeClass("idle");
+
+    setTimeout(function(){
+        element.addClass("idle");
+        element.removeClass("error");
+    }, 0.5*1000);
+}
+
 function unhighlightCell (pos) {
     findCellElement(pos).removeClass('selected');
 }
@@ -65,4 +76,4 @@ function displayResult(whiteScore, blackScore) {
     $('.score').text(`${whiteScore}-${blackScore}`)
 }
 
-export { displayResult, setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell }
+export { displayResult, setupDomBoard, drawBoard, addPieceToCell, highlightCell, unhighlightCell, highlightCellAsError }

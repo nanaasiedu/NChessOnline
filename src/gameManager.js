@@ -1,4 +1,4 @@
-import {displayResult, drawBoard, highlightCell, setupDomBoard} from "./domModifier.js";
+import {displayResult, drawBoard, highlightCell, setupDomBoard, highlightCellAsError} from "./domModifier.js";
 import {colour} from "./models/piece.js";
 import {isDraw, isCheckMate} from "./helpers/ruleHelpers.js";
 
@@ -25,7 +25,7 @@ class GameManager {
 
     _normalStateMove(coor) {
         if (this.board.colourAtCell(coor) !== this.board.getCurrentTurnColour()) {
-            alert("Illegal move!")
+            highlightCellAsError(coor)
             return;
         }
 
@@ -43,7 +43,7 @@ class GameManager {
         try {
             this.board.moveCell(this.currentSelectedCoor, destCoor)
         } catch (err) {
-            alert("Illegal move!")
+            highlightCellAsError(destCoor)
             return;
         }
 

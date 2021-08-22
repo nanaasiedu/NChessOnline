@@ -42,13 +42,23 @@ body {
     flex: 1;
 }
 
-.row > .cell {
+.cell {
     flex: 1;
     box-sizing: border-box;
 }
 
-.row > .cell:hover {
+/* .cell:hover {
     box-shadow:inset 0px 0px 0px 5px yellow;
+} */
+
+.cell.idle {
+    box-shadow: inset 0px 0px 0px 5px rgba(0, 0, 0, 0);
+    transition: 0.5s linear all;
+}
+
+.cell.error {
+    box-shadow:inset 0px 0px 0px 5px red;
+    transition: 0.5s linear all;
 }
 
 .row:nth-child(odd) > .cell:nth-child(odd) {
