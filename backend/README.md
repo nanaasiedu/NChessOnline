@@ -14,3 +14,13 @@ source backend/venv/bin/activate  # Activates virtual environment
 ``
 python manage.py runserver # start server locally on port 8000
 ``
+
+## Migrations
+
+``
+python manage.py makemigrations match # Make migrations for the match app
+python manage.py sqlmigrate match     # Shows the SQL that will be run when you migrate
+python manage.py migrate              # Run migrations
+
+python manage.py shell                # Opens python console with your django project loaded
+``

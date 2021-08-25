@@ -1,5 +1,35 @@
 from django.http.response import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+from django.views import View
+from .models import Match
+import json
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the match index.")
+default_state = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
+
+class IndexView(View):
+    def get(self, request):
+        return JsonResponse({
+            'matches' : []
+        })
+
+    def post(self, request):
+        data = json.loads(request.body)
+        match = Match(name = data['name'], state = default_state)
+        match.save()
+        
+        return JsonResponse({
+            'id' : match.pk
+        })
+
+class GetView(View):
+    def get(self, request, id):
+        
+        match = Match.objects.get(pk = id)
+
+        return JsonResponse({
+            'id' : id,
+            'name': match.name,
+            'state' : match.state
+        })
