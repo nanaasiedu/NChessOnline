@@ -13,6 +13,15 @@ source backend/venv/bin/activate  # Activates virtual environment
 
 ``
 python manage.py runserver # start server locally on port 8000
+
+curl -XPOST -H "Content-Type: application/json" -d '{"name":"match 1"}' localhost:8000/match/ # Post new match to backend server
+curl -H "Content-Type: application/json" localhost:8000/match/ # List Matches from backend server
+``
+
+## Testing
+
+``
+python manage.py test match
 ``
 
 ## Migrations
