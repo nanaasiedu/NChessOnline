@@ -11,7 +11,7 @@ default_state = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
 class IndexView(View):
     def get(self, request):
         return JsonResponse({
-            'matches' : []
+            'matches' : [ MatchModelToDict(match) for match in Match.objects.all() ]
         })
 
     def post(self, request):
@@ -28,8 +28,11 @@ class GetView(View):
         
         match = Match.objects.get(pk = id)
 
-        return JsonResponse({
-            'id' : id,
-            'name': match.name,
-            'state' : match.state
-        })
+        return JsonResponse(MatchModelToDict(match))
+
+def MatchModelToDict(match):
+    return {
+        'id' : match.pk,
+        'name' : match.name,
+        'state' : match.state
+    }
