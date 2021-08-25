@@ -1,0 +1,16 @@
+# NChess Online Backend
+
+## Setup
+
+To work on the backend, ensure you use the python virtual environment included in the repo
+
+``
+source backend/venv/bin/activate  # Activates virtual environment
+(venv) deactivate                 # Deactivates virtual environment
+``
+
+## Local
+
+``
+python manage.py runserver # start server locally on port 8000
+``
