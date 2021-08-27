@@ -1,4 +1,4 @@
-from django.http.response import HttpResponse
+from django.http.response import Http404, HttpResponse, HttpResponseNotFound
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
@@ -26,7 +26,10 @@ class IndexView(View):
 class GetView(View):
     def get(self, request, id):
         
-        match = Match.objects.get(pk = id)
+        try:
+            match = Match.objects.get(pk = id)
+        except:
+            return HttpResponseNotFound()
 
         return JsonResponse(MatchModelToDict(match))
 

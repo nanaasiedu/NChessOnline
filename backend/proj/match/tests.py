@@ -3,13 +3,13 @@ from django.urls import reverse
 import json
 
 class MatchViews(TestCase):
-    def test_intially_return_no_matches(self):
+    def test_list_matches_intially_return_no_matches(self):
         response = self.client.get(reverse('match:index'))
 
         self.assertEqual(response.status_code, 200)
         self.assertQuerysetEqual(response.json()['matches'], [])
 
-    def test_create_match(self):
+    def test_create_and_get_match(self):
         response = self.client.post(reverse('match:index'), json.dumps({'name' : 'match-name'}), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         match_id = response.json()['id']
@@ -22,6 +22,10 @@ class MatchViews(TestCase):
         self.assertEqual(match_json['id'], match_id)
         self.assertEqual(match_json['name'], 'match-name')
         self.assertEqual(match_json['state'], 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -')
+
+    def test_get_match_returns_404_for_unknown_id(self):
+        response = self.client.get(reverse('match:get', args=[404]))
+        self.assertEqual(response.status_code, 404)
 
     def test_list_matches(self):
         response = self.client.post(reverse('match:index'), json.dumps({'name' : 'match 1'}), content_type="application/json")
