@@ -18,8 +18,6 @@ class IndexView(View):
             } for match in Match.objects.all() ]
         })
 
-        response["Access-Control-Allow-Origin"] = "*"
-
         return response
 
     def post(self, request):
@@ -31,8 +29,6 @@ class IndexView(View):
             'id' : match.pk
         })
 
-        response["Access-Control-Allow-Origin"] = "*"
-
         return response
 
 class MatchDataView(View):
@@ -42,9 +38,13 @@ class MatchDataView(View):
         except:
             return HttpResponseNotFound()
 
-        return JsonResponse(MatchModelToDict(match))
+        response = JsonResponse(MatchModelToDict(match))
+
+        return response
 
     def put(self, request, id):
+        print("PUT METHOD")
+        print(request.body)
         data = json.loads(request.body)
         newState = data['state']
 
@@ -55,6 +55,7 @@ class MatchDataView(View):
         except:
             return HttpResponseNotFound()
 
+        print(f"SAVED NEW STATE {id}")
         response = HttpResponse()
         response.status_code = 200
 
