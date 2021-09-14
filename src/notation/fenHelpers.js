@@ -2,7 +2,7 @@ import {piece, colour} from "../models/piece.js";
 import {Cell} from "../models/cell.js";
 import {convertPositionToCoordinate, convertCoordinateToPosition} from "./chessNotationHelpers.js";
 
-const fenRegex = /(.+)\s([wb])\s?([K|Q|k|q]{1,4}|-)?\s?(.+)?/
+const fenRegex = /([rnbqkpRNBQKP1-8\/]+)(?:\s([wb]))?(?:\s([KQkq]{1,4}|-))?(?:\s([a-h][0-9]|-))?/
 
 function getFENForBoard(rows, turnColour,
                         canWhiteCastleKingSide,
@@ -144,7 +144,7 @@ function loadFENBoard(fen) {
 
 function loadFENIsWhiteTurn(fen) {
     const match = fen.match(fenRegex);
-    return match === null || match[2] === "w";
+    return match === null || match[2] == undefined || match[2] === "w";
 }
 
 function loadFENCastlingQueenSide(fen, playerColour, rows) {
