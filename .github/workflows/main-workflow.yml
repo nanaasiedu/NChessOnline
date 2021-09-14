@@ -37,7 +37,9 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
+          activate-venv: npm run activate-venv
           start: npm run start:background
+          start-backend: npm run start:backend
 
   deploy-heroku:
     runs-on: ubuntu-latest

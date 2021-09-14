@@ -40,9 +40,14 @@ docker run -d -p 8080:8080 chess-image          # Runs docker image in backgroun
 
 ## End To End testing
 
-The end to end test run using [cypress](https://www.cypress.io/). Make sure the app is running locally before starting tests.
+The end to end test run using [cypress](https://www.cypress.io/). Make sure the app is running locally before starting tests and that the python virtual environment is activated
 
 ```
+// Prerequisites
+npm run start
+npm run start:backend
+npm run activate-env
+
 npm run e2e
 npx cypress open
 ```
