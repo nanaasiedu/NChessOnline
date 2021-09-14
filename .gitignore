@@ -8,3 +8,4 @@ pgn-extract
 cypress/videos
 nohup.out
 backend/proj/db.sqlite3
+cypress/screenshots
