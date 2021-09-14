@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node --experimental-modules server.js",
+    "start:backend": "python backend/proj/manage.py runserver",
     "start:background": "nohup node --experimental-modules server.js &",
     "cypress:open": "cypress open",
     "e2e": "cypress run",
