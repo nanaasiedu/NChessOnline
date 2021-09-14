@@ -111,6 +111,18 @@ body {
     padding: 20px;
     text-transform: uppercase;
     font-style: bold;
+    transition: 1s linear all;
+    cursor: pointer;
+}
+
+.nav-bar .title a {
+    text-decoration: none;
+    color: inherit
+}
+
+.nav-bar .title:hover {
+    color: yellow;
+    transition: 1s linear all;
 }
 
 .basic-btn {
@@ -131,4 +143,18 @@ body {
     color: var(--btn-highlight);
     bottom: 5px;
     box-shadow: 0 5px 0 var(--btn-shadow);
+}
+
+.game-card {
+    display: block;
+    padding: 2em 6em;
+    text-decoration: none;
+    background-color: white;
+    border-radius: 0.5em;
+    border: 2px solid black;
+    color: black;
+    text-transform: uppercase;
+    position:relative;
+    box-shadow: 0 5px 0 grey;
+    margin-bottom: 10px;
 }

@@ -8,7 +8,8 @@
     "start:background": "nohup node --experimental-modules server.js &",
     "cypress:open": "cypress open",
     "e2e": "cypress run",
-    "test": "jasmine"
+    "test": "jasmine",
+    "clear_db": "scripts/clear_local_database.sh"
   },
   "name": "nchessonline",
   "version": "1.0.0",

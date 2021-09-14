@@ -1,10 +1,19 @@
+let numberOfGames = 0
+
 context('White wins', () => {
     beforeEach(() => {
         startNewGame()
     })
 
     it('mate in four', () => {
-        runTestForLANPGNFile('cypress/fixtures/white-mate-in-four.pgn');
+        cy.readFile('cypress/fixtures/white-mate-in-four.pgn').then((pgnText) => {
+            runTestForLANPGN(pgnText)
+
+            let result = extractResultFromPGN(pgnText)
+            cy.get(`#quit-game`).click()
+            cy.get(`.game-card`).click()
+            cy.get(`.score`).should('contain', result)
+        });
     })
 
     it('game 1', () => {
@@ -33,8 +42,15 @@ context('Draw', () => {
 })
 
 function startNewGame() {
-    cy.visit('http://localhost:8080')
+    numberOfGames += 1
+    let gameName = `Game ${numberOfGames}`
+
+    cy.exec("npm run clear_db")
+    cy.visit("/")
     cy.get(`#new-game`).click()
+
+    cy.get(`#new-game-form input[name=name]`).type(gameName)
+    cy.get(`#new-game-form input[type=submit]`).click()
 }
 
 function runTestForLANPGNFile(fileLocation) {
@@ -46,11 +62,15 @@ function runTestForLANPGNFile(fileLocation) {
 function runTestForLANPGN(pgnText) {
     let pgnItems = pgnText.split(" ");
     let moves = pgnItems.slice(0, -1);
-    let result = pgnItems.slice(-1)[0].slice(0, -1);
+    let result = extractResultFromPGN(pgnText);
 
     performMoves(moves);
 
     cy.get(`.score`).should('contain', result)
+}
+
+function extractResultFromPGN(pgnText) {
+    return pgnText.slice(-1)[0].slice(0, -1);
 }
 
 function performMoves(moves) {

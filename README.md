@@ -12,6 +12,15 @@ You can run a local node server using this command. The app will start at ```loc
 ``npm start # run local web server
 ``
 
+Some scripts/npm commands will not work if you have not set up the python virtual environment
+
+`` 
+source ./backend/venv/bin/activate
+(venv) npm run clear_db
+// OR
+./scripts/clear_local_database.sh
+``
+
 ## Docker
 
 ``
@@ -35,7 +44,7 @@ The end to end test run using [cypress](https://www.cypress.io/). Make sure the 
 
 ```
 npm run e2e
-npx run cypress
+npx cypress open
 ```
 
 The tests rely on [PGN](https://en.wikipedia.org/wiki/Portable_Game_Notation) files in the [LAN format](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)).

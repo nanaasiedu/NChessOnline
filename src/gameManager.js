@@ -3,8 +3,9 @@ import {colour} from "./models/piece.js";
 import {isDraw, isCheckMate} from "./helpers/ruleHelpers.js";
 
 class GameManager {
-    constructor(board) {
+    constructor(board, matchId) {
         this.board = board;
+        this.matchId = matchId
 
         this.currentGameState = gameState.NORMAL;
         this.currentSelectedCoor = undefined;
@@ -13,6 +14,7 @@ class GameManager {
     startGame() {
         setupDomBoard(this.board, this);
         drawBoard(this.board);
+        this._checkIfGameIsFinished();
     }
 
     selectCell(coor) {
@@ -49,6 +51,22 @@ class GameManager {
 
         this._switchToNormalMode();
 
+        // Move to API helper file
+        this._saveNewState()
+
+        this._checkIfGameIsFinished();
+    }
+
+    _saveNewState() {
+        $.ajax({
+            url: `http://localhost:8000/match/${this.matchId}`,
+            type: 'PUT',
+            data: JSON.stringify({ state: this.board.getFEN() }),
+            contentType: 'application/json'
+        });
+    }
+
+    _checkIfGameIsFinished() {
         if (isCheckMate(this.board)) {
             this._endGameWithCheckMate();
             return;
