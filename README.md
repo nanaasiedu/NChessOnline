@@ -44,9 +44,9 @@ The end to end test run using [cypress](https://www.cypress.io/). Make sure the 
 
 ```
 // Prerequisites
+source ./backend/venv/bin/activate
 npm run start
 npm run start:backend
-npm run activate-env
 
 npm run e2e
 npx cypress open

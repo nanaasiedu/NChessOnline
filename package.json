@@ -11,8 +11,7 @@
     "cypress:open": "cypress open",
     "e2e": "cypress run",
     "test": "jasmine",
-    "clear_db": "scripts/clear_local_database.sh",
-    "activate-venv": "./backend/venv/bin/activate"
+    "clear_db": "scripts/clear_local_database.sh"
   },
   "name": "nchessonline",
   "version": "1.0.0",

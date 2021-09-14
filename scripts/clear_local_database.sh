@@ -1,1 +1,1 @@
-./backend/proj/manage.py shell < backend/proj/scripts/wipe_database.py
+./backend/proj/manage.py shell < ./backend/proj/scripts/wipe_database.py

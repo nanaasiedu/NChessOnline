@@ -32,12 +32,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Python environment setup
+        run: python -m pip install -r ./backend/requirements.txt
+
+      - name: Prepare backend db
+        run: python backend/proj/manage.py migrate
+
       # Install NPM dependencies, cache them correctly
       # and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          start: ./scripts/prepare_local_background.sh
+          start: |
+            npm run start:background
+            npm run start:backend:background
 
   deploy-heroku:
     runs-on: ubuntu-latest
