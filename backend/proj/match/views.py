@@ -43,8 +43,6 @@ class MatchDataView(View):
         return response
 
     def put(self, request, id):
-        print("PUT METHOD")
-        print(request.body)
         data = json.loads(request.body)
         newState = data['state']
 
@@ -55,7 +53,6 @@ class MatchDataView(View):
         except:
             return HttpResponseNotFound()
 
-        print(f"SAVED NEW STATE {id}")
         response = HttpResponse()
         response.status_code = 200
 

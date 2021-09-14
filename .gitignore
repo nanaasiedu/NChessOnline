@@ -6,3 +6,4 @@ npm-debug.log
 pgn-extract
 cypress/videos
 nohup.out
+backend/proj/db.sqlite3
