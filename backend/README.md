@@ -33,3 +33,11 @@ python manage.py migrate              # Run migrations
 
 python manage.py shell                # Opens python console with your django project loaded
 ``
+
+# Scripts
+
+The scripts in `proj/scripts` should be run with the django shell
+
+``
+proj/manage.py < proj/scripts/wipe_database.py
+``
