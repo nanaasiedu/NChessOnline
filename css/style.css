@@ -145,9 +145,18 @@ body {
     box-shadow: 0 5px 0 var(--btn-shadow);
 }
 
+.game-cards {
+    margin-top: 3em;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .game-card {
     display: block;
-    padding: 2em 6em;
+    padding: 0.7em 1em;
+    width: 80%;
     text-decoration: none;
     background-color: white;
     border-radius: 0.5em;
@@ -157,4 +166,11 @@ body {
     position:relative;
     box-shadow: 0 5px 0 grey;
     margin-bottom: 10px;
+}
+
+.game-card:hover {
+    border-color: var(--btn-highlight);
+    color: var(--btn-highlight);
+    bottom: 5px;
+    box-shadow: 0 5px 0 var(--btn-shadow);
 }
